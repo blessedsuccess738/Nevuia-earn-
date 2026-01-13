@@ -22,7 +22,8 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
 
   const plan = PLAN_DETAILS[user.plan];
   const isActivated = user.status === AccountStatus.ACTIVATED;
-  const canWithdraw = plan.canWithdraw && isActivated && settings.isWithdrawalOpen;
+  const isIndividualOpen = user.withdrawalEnabled !== false;
+  const canWithdraw = plan.canWithdraw && isActivated && settings.isWithdrawalOpen && isIndividualOpen;
   const withdrawAmountNGN = parseFloat(withdrawAmountUSD) * settings.usdToNgnRate || 0;
 
   const handleWithdrawal = (e: React.FormEvent) => {
@@ -32,6 +33,11 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
     
     if (!settings.isWithdrawalOpen) {
       setMsg({ type: 'error', text: `Portal Closed: ${settings.withdrawalSchedule}` });
+      return;
+    }
+
+    if (!isIndividualOpen) {
+      setMsg({ type: 'error', text: 'Withdrawal is temporarily disabled for your account. Contact Support.' });
       return;
     }
 
@@ -85,9 +91,9 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
       <div className="glass-card p-10 md:p-14 rounded-[4rem] border border-white/5 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8">
            <span className={`text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest border ${
-             settings.isWithdrawalOpen ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+             settings.isWithdrawalOpen && isIndividualOpen ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
            }`}>
-             Portal: {settings.isWithdrawalOpen ? 'Open' : 'Closed'}
+             Portal: {settings.isWithdrawalOpen && isIndividualOpen ? 'Open' : 'Closed'}
            </span>
         </div>
 
@@ -187,9 +193,9 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
 
           <button 
             type="submit"
-            disabled={loading || !isActivated || !settings.isWithdrawalOpen}
+            disabled={loading || !isActivated || !settings.isWithdrawalOpen || !isIndividualOpen}
             className={`w-full py-6 rounded-[2rem] font-black transition-all shadow-2xl uppercase tracking-[0.2em] text-lg active:scale-95 ${
-              loading || !isActivated || !settings.isWithdrawalOpen ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-green-500 text-black hover:bg-green-400 shadow-green-500/20'
+              loading || !isActivated || !settings.isWithdrawalOpen || !isIndividualOpen ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-green-500 text-black hover:bg-green-400 shadow-green-500/20'
             }`}
           >
             {loading ? (
@@ -197,7 +203,7 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
                  <div className="w-5 h-5 border-4 border-black/30 border-t-black rounded-full animate-spin"></div>
                  Processing...
                </div>
-            ) : (!settings.isWithdrawalOpen ? 'Portal Closed' : !isActivated ? 'Activation Required' : 'Submit Withdrawal')}
+            ) : (!settings.isWithdrawalOpen || !isIndividualOpen ? 'Portal Closed' : !isActivated ? 'Activation Required' : 'Submit Withdrawal')}
           </button>
           
           <p className="text-center text-[10px] text-gray-600 font-bold uppercase tracking-widest">

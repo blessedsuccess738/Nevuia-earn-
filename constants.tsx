@@ -8,11 +8,13 @@ export const INITIAL_SETTINGS: AppSettings = {
   minWithdrawalNGN: 5000,
   dailyCapUSD: 5.00,
   referralBonusUSD: 0.50,
+  dailyRewardUSD: 0.10,
   isWithdrawalOpen: true,
   withdrawalSchedule: 'Available 24/7',
   telegramAdmin: 'https://t.me/admin',
   telegramChannel: 'https://t.me/channel',
-  whatsappLink: 'https://wa.me/yournumber'
+  whatsappLink: 'https://wa.me/yournumber',
+  paystackPublicKey: 'pk_test_placeholder_please_replace'
 };
 
 export const PLAN_DETAILS = {

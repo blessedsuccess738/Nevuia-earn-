@@ -30,15 +30,19 @@ export interface User {
   status: AccountStatus;
   plan: PlanTier;
   referralCode: string;
+  withdrawalEnabled: boolean;
   referredBy?: string;
   lastDailyReset?: string;
+  lastDailyRewardClaimed?: string;
+  referralsCount: number;
+  referralEarningsUSD: number;
 }
 
 export interface Transaction {
   id: string;
   userId: string;
   amountUSD: number;
-  type: 'WITHDRAWAL' | 'ACTIVATION';
+  type: 'WITHDRAWAL' | 'ACTIVATION' | 'REFERRAL' | 'DAILY_REWARD';
   status: TransactionStatus;
   timestamp: string;
   details?: string;
@@ -50,11 +54,13 @@ export interface AppSettings {
   minWithdrawalNGN: number;
   dailyCapUSD: number;
   referralBonusUSD: number;
+  dailyRewardUSD: number;
   isWithdrawalOpen: boolean;
   withdrawalSchedule: string;
   telegramAdmin: string;
   telegramChannel: string;
   whatsappLink: string;
+  paystackPublicKey: string;
 }
 
 export interface MusicTrack {
