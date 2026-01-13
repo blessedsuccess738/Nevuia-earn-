@@ -7,30 +7,48 @@
     <title>BeatBucks | Turn Every Beat into Dollars</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
         @keyframes wave {
-            0%, 100% { height: 10px; }
-            50% { height: 40px; }
+            0%, 100% { height: 8px; opacity: 0.3; }
+            50% { height: 48px; opacity: 1; }
         }
         .wave-bar {
-            width: 4px;
+            width: 6px;
             background: #22c55e;
-            border-radius: 2px;
-            margin: 0 2px;
-            animation: wave 1s ease-in-out infinite;
+            border-radius: 99px;
+            margin: 0 1px;
+            animation: wave 1.2s ease-in-out infinite;
         }
         .neon-glow {
-            text-shadow: 0 0 10px rgba(34, 197, 94, 0.7), 0 0 20px rgba(34, 197, 94, 0.5);
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.4);
         }
         .glass-card {
-            background: rgba(17, 17, 17, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         body {
             background-color: #050505;
             color: #ffffff;
             font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #22c55e;
+            border-radius: 10px;
         }
     </style>
 <script type="importmap">
