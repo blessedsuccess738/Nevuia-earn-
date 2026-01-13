@@ -62,7 +62,9 @@ export interface AppSettings {
   telegramChannel: string;
   whatsappLink: string;
   paystackPublicKey: string;
-  nubapiKey: string; // Added for dynamic bank verification config
+  nubapiKey: string; 
+  maintenanceMode: boolean; // Added for platform control
+  announcement: string;      // Global announcement text
 }
 
 export interface MusicTrack {
