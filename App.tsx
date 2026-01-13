@@ -8,7 +8,7 @@ import Withdraw from './pages/Withdraw';
 import AdminPanel from './pages/AdminPanel';
 import Activation from './pages/Activation';
 import Navbar from './components/Navbar';
-import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, TransactionStatus, Message } from './types';
+import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, TransactionStatus, Message, Notification, AdminNotification } from './types';
 import { stateStore } from './store';
 import { ADMIN_EMAIL } from './constants';
 
@@ -70,7 +70,8 @@ const App: React.FC = () => {
       withdrawalEnabled: true,
       lastDailyReset: new Date().toDateString(),
       referralsCount: 0,
-      referralEarningsUSD: 0
+      referralEarningsUSD: 0,
+      notifications: []
     };
 
     let updatedUsers = [...state.users, newUser];
@@ -120,19 +121,62 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, currentUser: null }));
   };
 
-  const sendMessage = (text: string) => {
-    if (!state.currentUser) return;
+  const sendMessage = (text: string, isAdmin: boolean = false, targetUserId?: string) => {
+    const userId = isAdmin ? (targetUserId || '') : (state.currentUser?.id || '');
+    const username = isAdmin ? 'Support Admin' : (state.currentUser?.username || 'User');
+    
+    if (!userId) return;
+
     const msg: Message = {
       id: Math.random().toString(36).substr(2, 9),
-      userId: state.currentUser.id,
-      username: state.currentUser.username,
+      userId: userId,
+      username: username,
       text,
       timestamp: new Date().toISOString(),
-      read: false
+      read: false,
+      isAdmin: isAdmin
     };
+
+    const newState: any = {
+      ...state,
+      messages: [...state.messages, msg]
+    };
+
+    if (!isAdmin) {
+      const adminNotif: AdminNotification = {
+        id: Math.random().toString(36).substr(2, 9),
+        title: 'New Support Message',
+        message: `User @${state.currentUser?.username} sent a new message.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'NEW_MESSAGE'
+      };
+      newState.adminNotifications = [adminNotif, ...state.adminNotifications];
+    } else {
+      // Notify user of admin reply
+      const userNotif: Notification = {
+        id: Math.random().toString(36).substr(2, 9),
+        title: 'New Support Reply',
+        message: 'An administrator has replied to your support ticket.',
+        timestamp: new Date().toISOString(),
+        read: false
+      };
+      newState.users = state.users.map(u => u.id === userId ? { ...u, notifications: [userNotif, ...u.notifications] } : u);
+      if (state.currentUser?.id === userId) {
+        newState.currentUser = { ...state.currentUser, notifications: [userNotif, ...state.currentUser.notifications] };
+      }
+    }
+
+    setState(newState);
+  };
+
+  const clearNotifications = () => {
+    if (!state.currentUser) return;
+    const updatedUser = { ...state.currentUser, notifications: [] };
     setState(prev => ({
       ...prev,
-      messages: [msg, ...prev.messages]
+      currentUser: updatedUser,
+      users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u)
     }));
   };
 
@@ -184,10 +228,36 @@ const App: React.FC = () => {
   };
 
   const addTransaction = (txn: Transaction) => {
-    setState(prev => ({
-      ...prev,
-      transactions: [txn, ...prev.transactions]
-    }));
+    const newState: any = {
+      ...state,
+      transactions: [txn, ...state.transactions]
+    };
+
+    if (txn.type === 'WITHDRAWAL') {
+      const adminNotif: AdminNotification = {
+        id: Math.random().toString(36).substr(2, 9),
+        title: 'Withdrawal Requested',
+        message: `User @${state.currentUser?.username} requested a payout of $${txn.amountUSD.toFixed(2)}.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'WITHDRAWAL_REQUEST'
+      };
+      newState.adminNotifications = [adminNotif, ...state.adminNotifications];
+    }
+
+    if (txn.type === 'ACTIVATION') {
+      const adminNotif: AdminNotification = {
+        id: Math.random().toString(36).substr(2, 9),
+        title: 'Activation Requested',
+        message: `User @${state.currentUser?.username} paid for ${txn.planRequested} plan.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'ACTIVATION_REQUEST'
+      };
+      newState.adminNotifications = [adminNotif, ...state.adminNotifications];
+    }
+
+    setState(newState);
   };
 
   const updateSettings = (newSettings: AppSettings) => {
@@ -219,6 +289,8 @@ const App: React.FC = () => {
                   transactions={state.transactions} 
                   onClaimDaily={claimDailyReward}
                   onSendMessage={sendMessage}
+                  onClearNotifications={clearNotifications}
+                  messages={state.messages}
                 />
               </ProtectedRoute>
             } />
@@ -249,6 +321,7 @@ const App: React.FC = () => {
                   onUpdateSettings={updateSettings} 
                   onUpdateTracks={updateTracks}
                   setState={setState}
+                  onSendMessage={sendMessage}
                 />
               </ProtectedRoute>
             } />

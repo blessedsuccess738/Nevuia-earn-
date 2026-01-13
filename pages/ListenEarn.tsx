@@ -26,7 +26,8 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
   const limitReached = user.songsListenedToday >= plan.songLimit;
   const remainingSongs = plan.songLimit === Infinity ? 'Unlimited' : Math.max(0, plan.songLimit - user.songsListenedToday);
 
-  // Daily Reset Countdown Logic
+  const activeTrack = tracks.find(t => t.id === activeTrackId);
+
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -44,7 +45,6 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
     return () => clearInterval(timer);
   }, []);
 
-  // Anti-Cheat: Prevent background playback and tab switching if needed
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isPlaying) {
@@ -68,11 +68,11 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
 
   const togglePlay = (track: MusicTrack) => {
     if (user.playedTracksToday.includes(track.id)) {
-      return; // Already locked
+      return; 
     }
 
     if (limitReached) {
-      alert(`Daily limit of ${plan.songLimit} songs reached for your ${plan.name} plan! Upgrade for more.`);
+      alert(`Daily limit reached for ${plan.name} plan! Upgrade for more.`);
       return;
     }
 
@@ -94,7 +94,6 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       const current = audioRef.current.currentTime;
-      // Anti-Cheat: Detect seeking (jumping ahead)
       if (current > lastTimeRef.current + 2) {
         audioRef.current.currentTime = lastTimeRef.current;
         alert("Seeking is disabled. Listen to the full track to earn.");
@@ -131,31 +130,79 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] pb-32 flex flex-col items-center">
-      {/* Top Header Panel */}
-      <div className="w-full sticky top-0 z-40 bg-black/60 backdrop-blur-2xl border-b border-white/5 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-               <i className="fas fa-headphones text-black text-xl"></i>
+    <div className="min-h-screen bg-[#050505] pb-40 flex flex-col items-center">
+      
+      {/* Dynamic Spotify-Style Now Playing Header */}
+      <div className="w-full sticky top-0 z-40 overflow-hidden bg-black/40 backdrop-blur-3xl border-b border-white/10">
+        {activeTrack ? (
+          <div className="relative w-full py-8 px-6 md:px-12 animate-in slide-in-from-top duration-500">
+            {/* Background Blur */}
+            <div className="absolute inset-0 -z-10 opacity-20 blur-3xl scale-150 transform">
+              <img src={activeTrack.albumArt} className="w-full h-full object-cover" alt="" />
             </div>
-            <div>
-              <h1 className="text-xl font-black text-white tracking-tighter italic uppercase leading-none">Music Vault</h1>
-              <p className="text-[10px] text-green-500 font-black uppercase tracking-[0.2em] mt-1">{plan.name} • {remainingSongs} Plays Left</p>
-            </div>
-          </div>
+            
+            <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8">
+              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group">
+                <img src={activeTrack.albumArt} className={`w-full h-full object-cover ${isPlaying ? 'animate-[spin_12s_linear_infinite]' : ''}`} alt="Art" />
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-[#050505] rounded-full border border-white/20"></div>
+                </div>
+              </div>
 
-          <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
-            <div className="text-right">
-              <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-none">Next Reset In</p>
-              <p className="text-sm font-black text-white italic">{timeToReset}</p>
+              <div className="flex-grow text-center md:text-left space-y-4">
+                <div>
+                   <span className="text-[10px] font-black bg-green-500 text-black px-3 py-1 rounded-full uppercase tracking-widest mb-2 inline-block">Now Streaming</span>
+                   <h2 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none truncate max-w-2xl">{activeTrack.title}</h2>
+                   <p className="text-gray-400 font-bold uppercase tracking-[0.3em] text-sm mt-2">{activeTrack.artist}</p>
+                </div>
+
+                <div className="space-y-2 max-w-xl">
+                   <div className="flex justify-between items-center text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                      <span className="text-green-500">{formatTime(currentTime)}</span>
+                      <span>{formatTime(activeTrack.duration)}</span>
+                   </div>
+                   <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                      <div className="h-full bg-gradient-to-r from-green-500 to-green-300 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(34,197,94,0.5)]" style={{ width: `${(currentTime / activeTrack.duration) * 100}%` }}></div>
+                   </div>
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => isPlaying ? pauseTrack() : startTrack()} className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-xl">
+                           <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'} ${isPlaying ? '' : 'ml-1'}`}></i>
+                        </button>
+                        <p className="text-green-500 font-black text-xs uppercase italic">Yielding: ${activeTrack.earningUSD.toFixed(2)}</p>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-none">Limit Remaining</p>
+                         <p className="text-xs font-black text-white">{remainingSongs} plays</p>
+                      </div>
+                   </div>
+                </div>
+              </div>
             </div>
-            <i className="fas fa-history text-gray-600"></i>
           </div>
-        </div>
+        ) : (
+          <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 px-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+                 <i className="fas fa-headphones text-black text-xl"></i>
+              </div>
+              <div>
+                <h1 className="text-xl font-black text-white tracking-tighter italic uppercase leading-none">Music Vault</h1>
+                <p className="text-[10px] text-green-500 font-black uppercase tracking-[0.2em] mt-1">{plan.name} • {remainingSongs} Plays Left</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
+              <div className="text-right">
+                <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-none">Next Reset In</p>
+                <p className="text-sm font-black text-white italic">{timeToReset}</p>
+              </div>
+              <i className="fas fa-history text-gray-600"></i>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="w-full max-w-4xl px-6 pt-8 space-y-8">
+      <div className="w-full max-w-4xl px-6 pt-12 space-y-8">
         {/* Search Bar */}
         <div className="relative group">
           <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
@@ -166,7 +213,7 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
             placeholder="Search artists, tracks, genres..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-[2rem] py-5 pl-14 pr-6 text-white placeholder-gray-600 focus:outline-none focus:border-green-500 focus:bg-white/10 transition-all font-bold text-sm"
+            className="w-full bg-white/5 border border-white/10 rounded-[2rem] py-5 pl-14 pr-6 text-white placeholder-gray-600 focus:outline-none focus:border-green-500 focus:bg-white/10 transition-all font-bold text-sm shadow-2xl"
           />
         </div>
 
@@ -177,7 +224,7 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={`px-6 py-2.5 rounded-full whitespace-nowrap text-[10px] font-black uppercase tracking-widest transition-all ${
-                activeCategory === cat ? 'bg-white text-black shadow-lg scale-105' : 'bg-white/5 text-gray-500 hover:text-white'
+                activeCategory === cat ? 'bg-white text-black shadow-lg scale-105' : 'bg-white/5 text-gray-500 hover:text-white border border-white/5'
               }`}
             >
               {cat}
@@ -185,7 +232,7 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
           ))}
         </div>
 
-        {/* Boomplay Style List */}
+        {/* Track List */}
         <div className="space-y-3 pb-20">
           {filteredTracks.length === 0 ? (
             <div className="text-center py-24 glass-card rounded-[3rem] border border-dashed border-white/10 opacity-30">
@@ -196,7 +243,6 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
             filteredTracks.map((track) => {
               const isActive = activeTrackId === track.id;
               const isPlayed = user.playedTracksToday.includes(track.id);
-              const trackProgress = isActive ? (currentTime / track.duration) * 100 : 0;
               const ngnVal = (track.earningUSD * settings.usdToNgnRate).toLocaleString();
 
               return (
@@ -204,10 +250,9 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
                   key={track.id} 
                   onClick={() => !isPlayed && togglePlay(track)}
                   className={`group relative glass-card rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 border ${
-                    isActive ? 'border-green-500/40 bg-green-500/5 ring-1 ring-green-500/20' : 'border-white/5 hover:bg-white/5'
+                    isActive ? 'border-green-500/40 bg-green-500/10 ring-1 ring-green-500/20' : 'border-white/5 hover:bg-white/5'
                   } ${isPlayed ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  {/* Album Art */}
                   <div className="relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden shadow-2xl">
                     <img src={track.albumArt} alt={track.title} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                     {isActive && (
@@ -226,7 +271,6 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
                     )}
                   </div>
 
-                  {/* Track Info */}
                   <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <h3 className="text-white font-black text-sm md:text-base truncate uppercase tracking-tighter italic">{track.title}</h3>
@@ -239,21 +283,8 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
                        <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
                        <span className="text-gray-600 font-black text-[9px] leading-none uppercase">{formatTime(track.duration)}</span>
                     </div>
-
-                    {isActive && (
-                      <div className="mt-3">
-                         <div className="flex justify-between items-center mb-1 text-[8px] font-black uppercase text-green-500 tracking-widest">
-                            <span>{formatTime(currentTime)}</span>
-                            <span>-{formatTime(track.duration - currentTime)}</span>
-                         </div>
-                         <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${trackProgress}%` }}></div>
-                         </div>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Play Button Icon */}
                   <div className={`flex-shrink-0 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center transition-all ${
                     isActive ? 'bg-green-500 text-black border-transparent scale-110 shadow-lg' : 'text-gray-500 group-hover:text-white group-hover:border-white/30'
                   }`}>
@@ -290,42 +321,15 @@ const ListenEarn: React.FC<ListenEarnProps> = ({ onReward, settings, user, track
             <h2 className="text-2xl font-black text-white mb-2 uppercase italic tracking-tighter">Gold Credited!</h2>
             <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-10 leading-relaxed">
               You earned +${showRewardModal.amount.toFixed(2)} (₦{(showRewardModal.amount * settings.usdToNgnRate).toFixed(0)}) <br />
-              <span className="text-gray-600 text-[10px]">Come back tomorrow for more earnings from this track.</span>
+              <span className="text-gray-600 text-[10px]">Your daily wallet has been successfully updated.</span>
             </p>
             <button 
               onClick={() => setShowRewardModal(null)}
               className="w-full bg-white text-black font-black py-4 rounded-2xl hover:bg-green-500 transition-all uppercase tracking-widest shadow-xl active:scale-95"
             >
-              Continue Earning
+              Back To Vault
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Persistent Mini Player Control if needed */}
-      {activeTrackId && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-md z-50 animate-in slide-in-from-bottom-10 duration-500">
-           <div className="glass-card p-4 rounded-[2rem] border border-green-500/20 shadow-2xl flex items-center gap-4">
-              <img 
-                src={tracks.find(t => t.id === activeTrackId)?.albumArt} 
-                className="w-12 h-12 rounded-xl object-cover" 
-                alt="Mini Cover" 
-              />
-              <div className="flex-grow min-w-0">
-                 <p className="text-white font-black text-xs uppercase italic truncate">
-                   {tracks.find(t => t.id === activeTrackId)?.title}
-                 </p>
-                 <div className="w-full h-1 bg-white/10 rounded-full mt-1 overflow-hidden">
-                    <div className="h-full bg-green-500" style={{ width: `${(currentTime / (tracks.find(t => t.id === activeTrackId)?.duration || 1)) * 100}%` }}></div>
-                 </div>
-              </div>
-              <button 
-                onClick={() => isPlaying ? pauseTrack() : startTrack()}
-                className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center shadow-lg"
-              >
-                 <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'} text-xs`}></i>
-              </button>
-           </div>
         </div>
       )}
     </div>

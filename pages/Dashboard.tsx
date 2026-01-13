@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { User, AppSettings, Transaction, AccountStatus, PlanTier } from '../types';
+import { User, AppSettings, Transaction, AccountStatus, Message } from '../types';
 import { PLAN_DETAILS } from '../constants';
 
 interface DashboardProps {
@@ -9,12 +9,16 @@ interface DashboardProps {
   settings: AppSettings;
   transactions: Transaction[];
   onClaimDaily: () => void;
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string, isAdmin?: boolean) => void;
+  onClearNotifications: () => void;
+  messages: Message[];
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onClaimDaily, onSendMessage }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onClaimDaily, onSendMessage, onClearNotifications, messages }) => {
   const [supportMsg, setSupportMsg] = useState('');
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const ngnBalance = user.balanceUSD * settings.usdToNgnRate;
   const userTransactions = transactions.filter(t => t.userId === user.id);
@@ -25,13 +29,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
   const today = new Date().toDateString();
   const canClaimDaily = user.lastDailyRewardClaimed !== today;
 
+  const myMessages = messages.filter(m => m.userId === user.id);
+
+  useEffect(() => {
+    if (showSupportModal) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [showSupportModal, myMessages]);
+
   const handleSubmitSupport = (e: React.FormEvent) => {
     e.preventDefault();
     if (!supportMsg.trim()) return;
     onSendMessage(supportMsg);
     setSupportMsg('');
-    alert('Message sent to the support desk. Our admin will review it shortly.');
-    setShowSupportModal(false);
   };
 
   if (settings.maintenanceMode && user.email !== 'blessedsuccess738@gmail.com') {
@@ -51,39 +61,52 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-24 relative">
       
-      {/* Live Support Floating Button */}
-      <a 
-        href={settings.whatsappLink} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-[60] group"
-      >
-        <div className="absolute -top-12 right-0 bg-green-500 text-black text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl">
-          Chat Live Admin
-        </div>
-        <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center text-black text-2xl shadow-[0_10px_40px_rgba(34,197,94,0.5)] hover:scale-110 active:scale-90 transition-all">
-          <i className="fab fa-whatsapp"></i>
-        </div>
-      </a>
-
-      {/* Global Announcement Ticker */}
-      {settings.announcement && (
-        <div className="relative overflow-hidden bg-white/5 border border-white/5 rounded-2xl py-3 px-6 group">
-          <div className="flex items-center gap-4">
-            <span className="flex-shrink-0 text-[10px] font-black bg-green-500 text-black px-2 py-0.5 rounded uppercase tracking-widest">News</span>
-            <p className="text-xs font-bold text-gray-300 uppercase tracking-tight whitespace-nowrap animate-pulse">
-              {settings.announcement}
-            </p>
+      {/* Floating Buttons */}
+      <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[60] flex flex-col gap-4">
+        <button 
+          onClick={() => setShowSupportModal(true)}
+          className="relative group w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl shadow-[0_10px_40px_rgba(59,130,246,0.5)] hover:scale-110 active:scale-90 transition-all"
+        >
+          <div className="absolute -top-12 right-0 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl">
+            Live In-App Chat
           </div>
-        </div>
-      )}
+          <i className="fas fa-comment-dots"></i>
+          {myMessages.filter(m => !m.read && m.isAdmin).length > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] font-black">!</span>
+          )}
+        </button>
 
+        <a 
+          href={settings.whatsappLink} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="relative group w-14 h-14 bg-green-500 rounded-full flex items-center justify-center text-black text-2xl shadow-[0_10px_40px_rgba(34,197,94,0.5)] hover:scale-110 active:scale-90 transition-all"
+        >
+          <div className="absolute -top-12 right-0 bg-green-500 text-black text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl">
+            Chat WhatsApp Admin
+          </div>
+          <i className="fab fa-whatsapp"></i>
+        </a>
+      </div>
+
+      {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">Hello, {user.username}</h1>
           <p className="text-gray-500 font-bold uppercase text-[10px] tracking-widest leading-none mt-2">Verified Network Earner</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => { setShowNotifications(true); }}
+            className="relative px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-gray-400 hover:text-white transition-all group"
+          >
+            <i className="fas fa-bell"></i>
+            {user.notifications.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-black text-[8px] font-black flex items-center justify-center rounded-full animate-bounce">
+                {user.notifications.length}
+              </span>
+            )}
+          </button>
           <div className="px-4 py-2 rounded-xl border border-white/10 text-[10px] font-black bg-white/5 flex items-center gap-2">
             <i className="fas fa-crown text-yellow-500"></i>
             {plan.name}
@@ -96,6 +119,43 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
           </div>
         </div>
       </header>
+
+      {/* Breaking News Announcement Section */}
+      {(settings.announcementSubject || settings.announcementContent) && (
+        <div className="glass-card p-6 md:p-10 rounded-[3rem] border-l-8 border-l-green-500 border border-white/5 bg-gradient-to-br from-green-500/5 to-transparent relative overflow-hidden group shadow-2xl animate-in slide-in-from-left duration-700">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-40 transition-all duration-1000 rotate-12 scale-150">
+            <i className="fas fa-newspaper text-8xl"></i>
+          </div>
+          <div className="flex items-center gap-4 mb-6">
+             <div className="flex h-3 w-3 relative">
+                <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></div>
+                <div className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></div>
+             </div>
+             <span className="text-[12px] font-black bg-red-600 text-white px-4 py-1.5 rounded-lg uppercase tracking-[0.2em] shadow-lg shadow-red-600/20">Breaking News</span>
+             <span className="text-[10px] text-gray-600 font-black uppercase tracking-widest">{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          </div>
+          
+          <div className="space-y-4 relative z-10">
+            <h2 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">{settings.announcementSubject}</h2>
+            <div className="h-2 w-32 bg-green-500 rounded-full"></div>
+            <p className="text-gray-300 text-base md:text-xl font-medium leading-relaxed uppercase tracking-tight max-w-5xl pt-4">
+              {settings.announcementContent}
+            </p>
+          </div>
+
+          <div className="mt-10 pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+             <div className="flex items-center gap-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  <i className="fas fa-user-shield text-green-500"></i>
+                </div>
+                Authorized Network Broadcast
+             </div>
+             <div className="flex gap-2">
+                <a href={settings.telegramChannel} target="_blank" rel="noopener" className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">Read More on Telegram</a>
+             </div>
+          </div>
+        </div>
+      )}
 
       {/* Daily Reward Banner */}
       {canClaimDaily && !settings.maintenanceMode && (
@@ -180,45 +240,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
           <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
             <i className="fas fa-headset text-red-500 text-xl"></i>
           </div>
-          <span className="font-black text-[10px] uppercase tracking-widest text-gray-400 group-hover:text-white">Contact Desk</span>
+          <span className="font-black text-[10px] uppercase tracking-widest text-gray-400 group-hover:text-white">Live Chat</span>
         </button>
-      </div>
-
-      {/* Support & Community Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         <div className="glass-card rounded-[3rem] p-8 border border-white/5 flex flex-col justify-between">
-            <div>
-               <h3 className="text-xl font-black italic uppercase tracking-tighter mb-4">Official Channels</h3>
-               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-8">Join the community for news, signals, and live updates.</p>
-               <div className="space-y-4">
-                  <a href={settings.telegramChannel} target="_blank" className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all group">
-                     <div className="flex items-center gap-4">
-                        <i className="fab fa-telegram text-blue-500 text-2xl group-hover:scale-110 transition-transform"></i>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Telegram Channel</span>
-                     </div>
-                     <i className="fas fa-chevron-right text-gray-600"></i>
-                  </a>
-                  <a href={settings.telegramAdmin} target="_blank" className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-blue-400/10 hover:border-blue-400/30 transition-all group">
-                     <div className="flex items-center gap-4">
-                        <i className="fas fa-user-shield text-blue-400 text-2xl group-hover:scale-110 transition-transform"></i>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Telegram Admin</span>
-                     </div>
-                     <i className="fas fa-chevron-right text-gray-600"></i>
-                  </a>
-               </div>
-            </div>
-         </div>
-
-         <div className="glass-card rounded-[3rem] p-8 border border-white/5">
-            <h3 className="text-xl font-black italic uppercase tracking-tighter mb-4">Need Assistance?</h3>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-8">Direct terminal for technical issues or payout queries.</p>
-            <button 
-              onClick={() => setShowSupportModal(true)}
-              className="w-full bg-white text-black font-black py-4 rounded-2xl uppercase tracking-[0.2em] text-xs hover:bg-green-500 transition-all"
-            >
-               Open Support Ticket
-            </button>
-         </div>
       </div>
 
       <div className="glass-card rounded-[3rem] p-8 border border-white/5">
@@ -261,25 +284,95 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
         )}
       </div>
 
-      {/* Support Message Modal */}
+      {/* Support Chat Modal */}
       {showSupportModal && (
+         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 md:p-6 backdrop-blur-2xl animate-in fade-in duration-300">
+            <div className="glass-card max-w-2xl w-full h-[80vh] flex flex-col rounded-[3rem] border border-white/10 relative overflow-hidden shadow-2xl">
+               <div className="p-6 md:p-8 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-lg">
+                        <i className="fas fa-headset"></i>
+                     </div>
+                     <div>
+                        <h3 className="text-lg font-black uppercase italic tracking-tighter text-white">Live Support</h3>
+                        <p className="text-[9px] text-green-500 font-black uppercase tracking-widest">Admin Team Online</p>
+                     </div>
+                  </div>
+                  <button onClick={() => setShowSupportModal(false)} className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center text-gray-500 hover:text-white transition-colors">
+                     <i className="fas fa-times"></i>
+                  </button>
+               </div>
+
+               <div className="flex-grow overflow-y-auto no-scrollbar p-6 space-y-4">
+                  {myMessages.length === 0 ? (
+                     <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-30 px-10">
+                        <i className="fas fa-comments text-5xl"></i>
+                        <p className="text-xs font-black uppercase tracking-widest">Initialize a secure terminal by sending your first message.</p>
+                     </div>
+                  ) : (
+                     myMessages.map(m => (
+                        <div key={m.id} className={`flex flex-col ${m.isAdmin ? 'items-start' : 'items-end'} animate-in fade-in slide-in-from-bottom-2`}>
+                           <div className={`max-w-[85%] p-4 rounded-3xl text-sm font-medium ${
+                              m.isAdmin ? 'bg-white/10 text-gray-200 rounded-bl-none border border-white/5' : 'bg-blue-600 text-white rounded-br-none shadow-lg'
+                           }`}>
+                              {m.text}
+                           </div>
+                           <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-1 px-2">
+                              {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                           </span>
+                        </div>
+                     ))
+                  )}
+                  <div ref={chatEndRef} />
+               </div>
+
+               <div className="p-6 md:p-8 bg-black/50 border-t border-white/5">
+                  <form onSubmit={handleSubmitSupport} className="flex gap-3">
+                     <input 
+                       type="text" 
+                       value={supportMsg} 
+                       onChange={e => setSupportMsg(e.target.value)}
+                       required
+                       className="flex-grow bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold text-sm outline-none focus:border-blue-500 transition-all"
+                       placeholder="Message support staff..."
+                     />
+                     <button type="submit" className="w-14 h-14 bg-white text-black rounded-2xl flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all shadow-xl active:scale-90">
+                        <i className="fas fa-paper-plane text-lg"></i>
+                     </button>
+                  </form>
+               </div>
+            </div>
+         </div>
+      )}
+
+      {/* Notifications Modal */}
+      {showNotifications && (
          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-6 backdrop-blur-2xl animate-in fade-in duration-300">
             <div className="glass-card max-w-lg w-full p-10 rounded-[3rem] border border-white/10 relative">
-               <button onClick={() => setShowSupportModal(false)} className="absolute top-8 right-8 text-gray-500 hover:text-white"><i className="fas fa-times"></i></button>
-               <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">Technical Support</h3>
-               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-8">Send a live message to our staff.</p>
-               <form onSubmit={handleSubmitSupport} className="space-y-6">
-                  <textarea 
-                    value={supportMsg} 
-                    onChange={e => setSupportMsg(e.target.value)}
-                    required
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold text-sm h-40 outline-none focus:border-green-500 transition-all resize-none"
-                    placeholder="Describe your issue or question..."
-                  ></textarea>
-                  <button type="submit" className="w-full bg-green-500 text-black font-black py-4 rounded-xl uppercase tracking-widest text-xs shadow-xl shadow-green-500/20 active:scale-95 transition-all">
-                     Transmit Message
-                  </button>
-               </form>
+               <button onClick={() => { setShowNotifications(false); onClearNotifications(); }} className="absolute top-8 right-8 text-gray-500 hover:text-white"><i className="fas fa-times"></i></button>
+               <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">Network Alerts</h3>
+               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-8">Updates on your activity.</p>
+               
+               <div className="space-y-4 max-h-[50vh] overflow-y-auto no-scrollbar pr-2">
+                 {user.notifications.length === 0 ? (
+                    <div className="py-20 text-center opacity-20 uppercase font-black tracking-widest text-[10px]">No new alerts.</div>
+                 ) : (
+                    user.notifications.map(n => (
+                      <div key={n.id} className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-1">
+                        <p className="text-white font-black text-xs uppercase tracking-tight italic">{n.title}</p>
+                        <p className="text-gray-400 text-[10px] leading-relaxed">{n.message}</p>
+                        <p className="text-[8px] text-gray-600 font-black pt-1 uppercase">{new Date(n.timestamp).toLocaleString()}</p>
+                      </div>
+                    ))
+                 )}
+               </div>
+               
+               <button 
+                onClick={() => { setShowNotifications(false); onClearNotifications(); }}
+                className="w-full bg-white text-black font-black py-4 rounded-xl uppercase tracking-widest text-xs mt-8 shadow-xl active:scale-95 transition-all"
+               >
+                 Close & Dismiss
+               </button>
             </div>
          </div>
       )}

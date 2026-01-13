@@ -19,6 +19,23 @@ export enum TransactionStatus {
   REJECTED = 'REJECTED'
 }
 
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
+
+export interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  type: 'WITHDRAWAL_REQUEST' | 'NEW_MESSAGE' | 'ACTIVATION_REQUEST';
+}
+
 export interface User {
   id: string;
   username: string;
@@ -37,6 +54,7 @@ export interface User {
   lastDailyRewardClaimed?: string;
   referralsCount: number;
   referralEarningsUSD: number;
+  notifications: Notification[];
 }
 
 export interface Transaction {
@@ -52,11 +70,12 @@ export interface Transaction {
 
 export interface Message {
   id: string;
-  userId: string;
+  userId: string; 
   username: string;
   text: string;
   timestamp: string;
   read: boolean;
+  isAdmin: boolean; 
 }
 
 export interface AppSettings {
@@ -73,7 +92,8 @@ export interface AppSettings {
   paystackPublicKey: string;
   nubapiKey: string; 
   maintenanceMode: boolean;
-  announcement: string;
+  announcementSubject: string;
+  announcementContent: string;
 }
 
 export interface MusicTrack {
@@ -94,5 +114,6 @@ export interface AppState {
   transactions: Transaction[];
   settings: AppSettings;
   tracks: MusicTrack[];
-  messages: Message[]; // Added for customer support
+  messages: Message[];
+  adminNotifications: AdminNotification[];
 }
