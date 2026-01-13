@@ -22,6 +22,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
       <div className="hidden md:flex items-center space-x-6">
         <Link to="/dashboard" className="text-gray-400 hover:text-white transition-colors">Dashboard</Link>
         <Link to="/listen" className="text-gray-400 hover:text-white transition-colors">Listen & Earn</Link>
+        <Link to="/activation" className="text-gray-400 hover:text-white transition-colors">Activation</Link>
         <Link to="/withdraw" className="text-gray-400 hover:text-white transition-colors">Withdraw</Link>
         {user.email === ADMIN_EMAIL && (
           <Link to="/admin" className="text-green-500 hover:text-green-400 transition-colors font-semibold">Admin</Link>

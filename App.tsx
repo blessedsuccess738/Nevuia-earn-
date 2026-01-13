@@ -6,8 +6,9 @@ import Dashboard from './pages/Dashboard';
 import ListenEarn from './pages/ListenEarn';
 import Withdraw from './pages/Withdraw';
 import AdminPanel from './pages/AdminPanel';
+import Activation from './pages/Activation';
 import Navbar from './components/Navbar';
-import { User, AppSettings, Transaction, AccountStatus } from './types';
+import { User, AppSettings, Transaction, AccountStatus, PlanTier } from './types';
 import { stateStore } from './store';
 import { ADMIN_EMAIL } from './constants';
 
@@ -17,6 +18,29 @@ const App: React.FC = () => {
   useEffect(() => {
     stateStore.save(state);
   }, [state]);
+
+  // Check for daily reset on mount and when user changes
+  useEffect(() => {
+    if (state.currentUser) {
+      const lastReset = state.currentUser.lastDailyReset;
+      const today = new Date().toDateString();
+      
+      if (lastReset !== today) {
+        const updatedUser = {
+          ...state.currentUser,
+          dailyEarnings: 0,
+          songsListenedToday: 0,
+          lastDailyReset: today
+        };
+        
+        setState(prev => ({
+          ...prev,
+          currentUser: updatedUser,
+          users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u)
+        }));
+      }
+    }
+  }, [state.currentUser?.id]);
 
   const login = (email: string) => {
     const user = state.users.find(u => u.email === email);
@@ -28,9 +52,7 @@ const App: React.FC = () => {
   };
 
   const register = (username: string, email: string) => {
-    // Correctly initialize status using the enum and clean up the registration logic
-    const finalStatus = email === ADMIN_EMAIL ? AccountStatus.ACTIVATED : AccountStatus.NOT_ACTIVATED;
-    
+    const isAdmin = email === ADMIN_EMAIL;
     const newUser: User = {
       id: Math.random().toString(36).substr(2, 9),
       username,
@@ -38,8 +60,11 @@ const App: React.FC = () => {
       balanceUSD: 0,
       totalSongs: 0,
       dailyEarnings: 0,
-      status: finalStatus,
+      songsListenedToday: 0,
+      status: isAdmin ? AccountStatus.ACTIVATED : AccountStatus.NOT_ACTIVATED,
+      plan: isAdmin ? PlanTier.PREMIUM : PlanTier.FREE,
       referralCode: Math.random().toString(36).substr(2, 6).toUpperCase(),
+      lastDailyReset: new Date().toDateString()
     };
 
     setState(prev => ({
@@ -59,7 +84,8 @@ const App: React.FC = () => {
       ...state.currentUser,
       balanceUSD: state.currentUser.balanceUSD + amount,
       totalSongs: state.currentUser.totalSongs + 1,
-      dailyEarnings: state.currentUser.dailyEarnings + amount
+      dailyEarnings: state.currentUser.dailyEarnings + amount,
+      songsListenedToday: state.currentUser.songsListenedToday + 1
     };
     setState(prev => ({
       ...prev,
@@ -79,7 +105,6 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, settings: newSettings }));
   };
 
-  // Fixed: Made children optional in the type to resolve TypeScript error 'Property children is missing'
   const ProtectedRoute = ({ children, adminOnly = false }: { children?: React.ReactNode, adminOnly?: boolean }) => {
     if (!state.currentUser) return <Navigate to="/" />;
     if (adminOnly && state.currentUser.email !== ADMIN_EMAIL) return <Navigate to="/dashboard" />;
@@ -96,6 +121,11 @@ const App: React.FC = () => {
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard user={state.currentUser!} settings={state.settings} transactions={state.transactions} />
+              </ProtectedRoute>
+            } />
+            <Route path="/activation" element={
+              <ProtectedRoute>
+                <Activation user={state.currentUser!} settings={state.settings} onTransaction={addTransaction} setState={setState} />
               </ProtectedRoute>
             } />
             <Route path="/listen" element={

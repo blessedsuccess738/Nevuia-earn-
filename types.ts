@@ -6,6 +6,13 @@ export enum AccountStatus {
   BANNED = 'BANNED'
 }
 
+export enum PlanTier {
+  FREE = 'FREE',
+  BASIC = 'BASIC',
+  STANDARD = 'STANDARD',
+  PREMIUM = 'PREMIUM'
+}
+
 export enum TransactionStatus {
   PROCESSING = 'PROCESSING',
   APPROVED = 'APPROVED',
@@ -19,10 +26,12 @@ export interface User {
   balanceUSD: number;
   totalSongs: number;
   dailyEarnings: number;
+  songsListenedToday: number;
   status: AccountStatus;
+  plan: PlanTier;
   referralCode: string;
   referredBy?: string;
-  lastDailyLogin?: string;
+  lastDailyReset?: string;
 }
 
 export interface Transaction {
@@ -33,12 +42,12 @@ export interface Transaction {
   status: TransactionStatus;
   timestamp: string;
   details?: string;
+  planRequested?: PlanTier;
 }
 
 export interface AppSettings {
   usdToNgnRate: number;
-  activationFeeUSD: number;
-  minWithdrawalUSD: number;
+  minWithdrawalNGN: number;
   dailyCapUSD: number;
   referralBonusUSD: number;
 }
