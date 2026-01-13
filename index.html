@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeatBucks | Turn Every Beat into Dollars</title>
+    <title>BeatBucks | Professional Audio Monetization</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,26 +14,30 @@
     <style>
         * {
             -webkit-tap-highlight-color: transparent;
+            scrollbar-width: thin;
+            scrollbar-color: #22c55e #050505;
         }
-        @keyframes wave {
-            0%, 100% { height: 8px; opacity: 0.3; }
-            50% { height: 48px; opacity: 1; }
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.1; }
+            33% { transform: translateY(-50px) translateX(20px) rotate(10deg); opacity: 0.3; }
+            66% { transform: translateY(-20px) translateX(-20px) rotate(-10deg); opacity: 0.2; }
+            100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.1; }
         }
-        .wave-bar {
-            width: 6px;
-            background: #22c55e;
-            border-radius: 99px;
-            margin: 0 1px;
-            animation: wave 1.2s ease-in-out infinite;
+        .bubble-icon {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(1px);
+            animation: float 8s ease-in-out infinite;
+            text-shadow: 0 0 20px currentColor;
         }
         .neon-glow {
             text-shadow: 0 0 10px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.4);
         }
         .glass-card {
-            background: rgba(10, 10, 10, 0.6);
+            background: rgba(15, 15, 15, 0.7);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         body {
             background-color: #050505;
@@ -50,9 +54,6 @@
         ::-webkit-scrollbar-thumb {
             background: #22c55e;
             border-radius: 10px;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
         }
     </style>
 <script type="importmap">
