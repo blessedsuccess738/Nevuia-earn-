@@ -1,14 +1,15 @@
 
-import { User, Transaction, AppSettings, AccountStatus } from './types';
-import { INITIAL_SETTINGS } from './constants';
+import { User, Transaction, AppSettings, MusicTrack } from './types';
+import { INITIAL_SETTINGS, INITIAL_TRACKS } from './constants';
 
-const STORAGE_KEY = 'beatbucks_state';
+const STORAGE_KEY = 'beatbucks_state_v2';
 
 interface State {
   users: User[];
   currentUser: User | null;
   transactions: Transaction[];
   settings: AppSettings;
+  tracks: MusicTrack[];
 }
 
 const getInitialState = (): State => {
@@ -19,6 +20,7 @@ const getInitialState = (): State => {
     currentUser: null,
     transactions: [],
     settings: INITIAL_SETTINGS,
+    tracks: INITIAL_TRACKS,
   };
 };
 

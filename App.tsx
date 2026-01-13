@@ -8,7 +8,7 @@ import Withdraw from './pages/Withdraw';
 import AdminPanel from './pages/AdminPanel';
 import Activation from './pages/Activation';
 import Navbar from './components/Navbar';
-import { User, AppSettings, Transaction, AccountStatus, PlanTier } from './types';
+import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack } from './types';
 import { stateStore } from './store';
 import { ADMIN_EMAIL } from './constants';
 
@@ -19,7 +19,6 @@ const App: React.FC = () => {
     stateStore.save(state);
   }, [state]);
 
-  // Check for daily reset on mount and when user changes
   useEffect(() => {
     if (state.currentUser) {
       const lastReset = state.currentUser.lastDailyReset;
@@ -105,6 +104,10 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, settings: newSettings }));
   };
 
+  const updateTracks = (newTracks: MusicTrack[]) => {
+    setState(prev => ({ ...prev, tracks: newTracks }));
+  };
+
   const ProtectedRoute = ({ children, adminOnly = false }: { children?: React.ReactNode, adminOnly?: boolean }) => {
     if (!state.currentUser) return <Navigate to="/" />;
     if (adminOnly && state.currentUser.email !== ADMIN_EMAIL) return <Navigate to="/dashboard" />;
@@ -130,7 +133,7 @@ const App: React.FC = () => {
             } />
             <Route path="/listen" element={
               <ProtectedRoute>
-                <ListenEarn onReward={updateBalance} settings={state.settings} user={state.currentUser!} />
+                <ListenEarn onReward={updateBalance} settings={state.settings} user={state.currentUser!} tracks={state.tracks} />
               </ProtectedRoute>
             } />
             <Route path="/withdraw" element={
@@ -148,6 +151,7 @@ const App: React.FC = () => {
                 <AdminPanel 
                   state={state} 
                   onUpdateSettings={updateSettings} 
+                  onUpdateTracks={updateTracks}
                   setState={setState}
                 />
               </ProtectedRoute>

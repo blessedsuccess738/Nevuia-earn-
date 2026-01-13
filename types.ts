@@ -57,5 +57,8 @@ export interface MusicTrack {
   title: string;
   artist: string;
   url: string;
+  albumArt: string;
   duration: number;
+  earningUSD: number;
+  category: string;
 }
