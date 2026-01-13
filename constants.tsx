@@ -17,8 +17,8 @@ export const INITIAL_SETTINGS: AppSettings = {
   paystackPublicKey: 'pk_test_placeholder_please_replace',
   nubapiKey: '4uSyi6KbtzZZZwBpE8Lkh31A3Il0k2sQ6kKv4uND962e0daf', 
   maintenanceMode: false,
-  announcementSubject: 'NETWORK PROTOCOL UPDATE',
-  announcementContent: 'Important: We have successfully integrated the high-yield liquidity pool for the new Juice WRLD tracks. Users can now earn up to $0.80 per stream on verified high-fidelity assets. Ensure your wallet is activated to claim rewards.'
+  announcementSubject: 'PREMIUM ASSET: RANSOM (REMIX) ADDED',
+  announcementContent: 'ATTENTION: We have just secured the high-yield license for Lil Tecca ft. Juice WRLD - Ransom (Remix). This track features a premium yield of $0.85 per stream. Start listening now to maximize your daily liquidity!'
 };
 
 export const INITIAL_TRACKS: MusicTrack[] = [
@@ -195,6 +195,17 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=300&q=80',
     duration: 220,
     earningUSD: 0.80,
+    category: 'Trending',
+    enabled: true
+  },
+  { 
+    id: '17', 
+    title: 'Ransom (Remix)', 
+    artist: 'Lil Tecca ft. Juice WRLD', 
+    url: 'https://s51.aconvert.com/convert/p3r68-cdx67/zz91d-y33tp.mp3', 
+    albumArt: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=400&q=80',
+    duration: 180,
+    earningUSD: 0.85,
     category: 'Trending',
     enabled: true
   }
