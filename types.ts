@@ -27,7 +27,7 @@ export interface User {
   totalSongs: number;
   dailyEarnings: number;
   songsListenedToday: number;
-  playedTracksToday: string[]; // List of IDs of tracks played today
+  playedTracksToday: string[]; 
   status: AccountStatus;
   plan: PlanTier;
   referralCode: string;
@@ -62,6 +62,7 @@ export interface AppSettings {
   telegramChannel: string;
   whatsappLink: string;
   paystackPublicKey: string;
+  nubapiKey: string; // Added for dynamic bank verification config
 }
 
 export interface MusicTrack {

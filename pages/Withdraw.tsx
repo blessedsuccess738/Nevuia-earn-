@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, AppSettings, Transaction, AccountStatus, TransactionStatus, PlanTier } from '../types';
-import { PLAN_DETAILS } from '../constants';
+import { PLAN_DETAILS, NIGERIAN_BANKS } from '../constants';
 
 interface WithdrawProps {
   user: User;
@@ -14,39 +14,73 @@ interface WithdrawProps {
 const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setState }) => {
   const navigate = useNavigate();
   const [withdrawAmountUSD, setWithdrawAmountUSD] = useState('');
-  const [bankName, setBankName] = useState('');
+  const [bankCode, setBankCode] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
 
   const plan = PLAN_DETAILS[user.plan];
   const isActivated = user.status === AccountStatus.ACTIVATED;
   const isIndividualOpen = user.withdrawalEnabled !== false;
-  const canWithdraw = plan.canWithdraw && isActivated && settings.isWithdrawalOpen && isIndividualOpen;
   const withdrawAmountNGN = parseFloat(withdrawAmountUSD) * settings.usdToNgnRate || 0;
+
+  useEffect(() => {
+    const verifyAccount = async () => {
+      if (accountNumber.length === 10 && bankCode) {
+        setIsVerifying(true);
+        setIsVerified(false);
+        setAccountName('');
+        
+        const apiKey = settings.nubapiKey || process.env.API_KEY;
+
+        try {
+          const response = await fetch(`https://nubapi.com/api/verify?account_number=${accountNumber}&bank_code=${bankCode}`, {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          const data = await response.json();
+          
+          if (data && data.account_name) {
+            setAccountName(data.account_name);
+            setIsVerified(true);
+            setMsg({ type: 'success', text: 'Account verified successfully!' });
+          } else {
+            setMsg({ type: 'error', text: data.message || 'Verification failed. Please check details.' });
+          }
+        } catch (error) {
+          console.error("Verification Error:", error);
+          setMsg({ type: 'error', text: 'Network error during verification.' });
+        } finally {
+          setIsVerifying(false);
+        }
+      }
+    };
+
+    const debounce = setTimeout(verifyAccount, 500);
+    return () => clearTimeout(debounce);
+  }, [accountNumber, bankCode, settings.nubapiKey]);
 
   const handleWithdrawal = (e: React.FormEvent) => {
     e.preventDefault();
     const amountUSD = parseFloat(withdrawAmountUSD);
-    const amountNGN = amountUSD * settings.usdToNgnRate;
     
     if (!settings.isWithdrawalOpen) {
       setMsg({ type: 'error', text: `Portal Closed: ${settings.withdrawalSchedule}` });
       return;
     }
 
-    if (!isIndividualOpen) {
-      setMsg({ type: 'error', text: 'Withdrawal is temporarily disabled for your account. Contact Support.' });
+    if (!isVerified) {
+      setMsg({ type: 'error', text: 'Please verify your bank account details first.' });
       return;
     }
 
-    if (!isActivated) {
-      setMsg({ type: 'error', text: 'You must activate a professional plan before withdrawing.' });
-      return;
-    }
-    
-    if (amountNGN < settings.minWithdrawalNGN) {
+    if (amountUSD * settings.usdToNgnRate < settings.minWithdrawalNGN) {
       setMsg({ type: 'error', text: `Minimum withdrawal is ₦${settings.minWithdrawalNGN.toLocaleString()}.` });
       return;
     }
@@ -58,6 +92,7 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
 
     setLoading(true);
     setTimeout(() => {
+      const selectedBank = NIGERIAN_BANKS.find(b => b.code === bankCode)?.name || 'Unknown Bank';
       const txn: Transaction = {
         id: Math.random().toString(36).substr(2, 9),
         userId: user.id,
@@ -65,7 +100,7 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
         type: 'WITHDRAWAL',
         status: TransactionStatus.PROCESSING,
         timestamp: new Date().toISOString(),
-        details: `${bankName} - ${accountNumber} (${accountName})`
+        details: `${selectedBank} - ${accountNumber} (${accountName})`
       };
       
       onTransaction(txn);
@@ -78,16 +113,15 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
       }));
 
       setLoading(false);
-      setMsg({ type: 'success', text: 'Withdrawal request submitted for processing.' });
+      setMsg({ type: 'success', text: 'Withdrawal submitted. Payout in progress.' });
       setWithdrawAmountUSD('');
-      setBankName('');
       setAccountNumber('');
-      setAccountName('');
+      setIsVerified(false);
     }, 1500);
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 md:p-12">
+    <div className="max-w-3xl mx-auto p-6 md:p-12 animate-in fade-in duration-500">
       <div className="glass-card p-10 md:p-14 rounded-[4rem] border border-white/5 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8">
            <span className={`text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest border ${
@@ -97,19 +131,19 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
            </span>
         </div>
 
-        <h2 className="text-4xl font-black mb-2 uppercase italic tracking-tighter">Cash Out</h2>
-        <p className="text-gray-500 mb-12 font-medium">Securely withdraw your earnings to your local bank account.</p>
+        <h2 className="text-4xl font-black mb-2 uppercase italic tracking-tighter">Withdraw Funds</h2>
+        <p className="text-gray-500 mb-12 font-medium">Local Nigerian bank settlement enabled.</p>
 
         {!isActivated && (
           <div className="bg-yellow-500/10 border border-yellow-500/20 p-6 rounded-3xl mb-10 flex flex-col md:flex-row items-center justify-between gap-4">
              <div className="flex items-center gap-4">
                 <i className="fas fa-lock text-yellow-500 text-2xl"></i>
                 <div>
-                   <h4 className="text-white font-black text-sm uppercase">Account Not Activated</h4>
-                   <p className="text-xs text-gray-500 font-medium">Activation is required for all withdrawals.</p>
+                   <h4 className="text-white font-black text-sm uppercase">Activation Needed</h4>
+                   <p className="text-xs text-gray-500 font-medium tracking-tight">Standard or Premium plan required.</p>
                 </div>
              </div>
-             <button onClick={() => navigate('/activation')} className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase">Activate Now</button>
+             <button onClick={() => navigate('/activation')} className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase">Activate</button>
           </div>
         )}
 
@@ -123,92 +157,87 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
         <form onSubmit={handleWithdrawal} className="space-y-8">
           <div className="grid grid-cols-2 gap-4">
             <div className="p-6 bg-white/5 rounded-3xl border border-white/10">
-              <p className="text-[10px] text-gray-500 font-black mb-1 uppercase tracking-widest">Available Balance</p>
+              <p className="text-[10px] text-gray-500 font-black mb-1 uppercase tracking-widest">Available</p>
               <p className="text-2xl font-black text-white">${user.balanceUSD.toFixed(2)}</p>
               <p className="text-green-500 text-xs font-bold">₦{(user.balanceUSD * settings.usdToNgnRate).toLocaleString()}</p>
             </div>
             <div className="p-6 bg-white/5 rounded-3xl border border-white/10">
-              <p className="text-[10px] text-gray-500 font-black mb-1 uppercase tracking-widest">Min. Withdrawal</p>
-              <p className="text-2xl font-black text-white">₦{settings.minWithdrawalNGN.toLocaleString()}</p>
-              <p className="text-gray-500 text-xs font-bold">≈ ${(settings.minWithdrawalNGN / settings.usdToNgnRate).toFixed(2)} USD</p>
+              <p className="text-[10px] text-gray-500 font-black mb-1 uppercase tracking-widest">Rate</p>
+              <p className="text-xl font-black text-white">₦{settings.usdToNgnRate.toLocaleString()}/$</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <label className="text-[10px] text-gray-500 uppercase font-black tracking-widest ml-1">Withdrawal Amount (USD)</label>
-            <div className="relative">
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 font-black text-xl">$</span>
-              <input 
-                type="number" 
-                required
-                step="0.01"
-                min={settings.minWithdrawalNGN / settings.usdToNgnRate}
-                value={withdrawAmountUSD}
-                onChange={(e) => setWithdrawAmountUSD(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 rounded-[2rem] pl-12 pr-6 py-6 focus:outline-none focus:border-green-500 text-white text-2xl font-black transition-all" 
-                placeholder="0.00"
-              />
-            </div>
-            {withdrawAmountUSD && (
-              <div className="bg-green-500/5 p-4 rounded-2xl border border-green-500/10 flex justify-between items-center">
-                <span className="text-[10px] text-green-500 font-black uppercase">Net Payout (NGN)</span>
-                <span className="text-xl font-black text-white">₦{withdrawAmountNGN.toLocaleString()}</span>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4 pt-8 border-t border-white/5">
-            <h4 className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-4">Bank Account Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div>
-                  <input 
-                    type="text" 
-                    required
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-green-500 text-white font-medium" 
-                    placeholder="Bank Name"
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="text" 
-                    required
-                    value={accountNumber}
-                    onChange={(e) => setAccountNumber(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-green-500 text-white font-medium" 
-                    placeholder="Account Number"
-                  />
-                </div>
-            </div>
+          <div className="space-y-2">
+            <label className="text-[10px] text-gray-500 uppercase font-black tracking-widest ml-1">Withdraw Amount ($)</label>
             <input 
-              type="text" 
+              type="number" 
               required
-              value={accountName}
-              onChange={(e) => setAccountName(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-green-500 text-white font-medium" 
-              placeholder="Account Holder Full Name"
+              value={withdrawAmountUSD}
+              onChange={(e) => setWithdrawAmountUSD(e.target.value)}
+              className="w-full bg-black/50 border border-white/10 rounded-[2rem] px-8 py-6 focus:outline-none focus:border-green-500 text-white text-2xl font-black transition-all" 
+              placeholder="0.00"
             />
+          </div>
+
+          <div className="space-y-6 pt-8 border-t border-white/5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="space-y-1">
+                  <label className="text-[9px] text-gray-600 uppercase font-black ml-1">Bank</label>
+                  <select 
+                    value={bankCode} 
+                    onChange={e => setBankCode(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-green-500 text-white font-bold h-[54px]"
+                  >
+                    <option value="" disabled className="bg-black">Select Bank</option>
+                    {NIGERIAN_BANKS.map(bank => (
+                      <option key={bank.code} value={bank.code} className="bg-black">{bank.name}</option>
+                    ))}
+                  </select>
+               </div>
+
+               <div className="space-y-1">
+                  <label className="text-[9px] text-gray-600 uppercase font-black ml-1">Account Number</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      maxLength={10}
+                      required
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-green-500 text-white font-black tracking-widest" 
+                      placeholder="0123456789"
+                    />
+                    {isVerifying && <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin"></div>}
+                  </div>
+               </div>
+            </div>
+
+            <div className="space-y-1">
+               <label className="text-[9px] text-gray-600 uppercase font-black ml-1">Verified Name</label>
+               <div className="relative">
+                 <input 
+                   type="text" 
+                   readOnly
+                   value={accountName}
+                   className={`w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic ${isVerified ? 'border-green-500/50 bg-green-500/5' : ''}`} 
+                   placeholder="Verification Required"
+                 />
+                 {isVerified && <i className="fas fa-check-circle absolute right-4 top-1/2 -translate-y-1/2 text-green-500"></i>}
+               </div>
+            </div>
           </div>
 
           <button 
             type="submit"
-            disabled={loading || !isActivated || !settings.isWithdrawalOpen || !isIndividualOpen}
-            className={`w-full py-6 rounded-[2rem] font-black transition-all shadow-2xl uppercase tracking-[0.2em] text-lg active:scale-95 ${
-              loading || !isActivated || !settings.isWithdrawalOpen || !isIndividualOpen ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-green-500 text-black hover:bg-green-400 shadow-green-500/20'
+            disabled={loading || !isVerified || !isActivated || !settings.isWithdrawalOpen}
+            className={`w-full py-6 rounded-[2rem] font-black transition-all uppercase tracking-widest text-lg ${
+              loading || !isVerified || !isActivated || !settings.isWithdrawalOpen 
+              ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
+              : 'bg-green-500 text-black hover:bg-green-400 shadow-xl'
             }`}
           >
-            {loading ? (
-               <div className="flex items-center justify-center gap-3">
-                 <div className="w-5 h-5 border-4 border-black/30 border-t-black rounded-full animate-spin"></div>
-                 Processing...
-               </div>
-            ) : (!settings.isWithdrawalOpen || !isIndividualOpen ? 'Portal Closed' : !isActivated ? 'Activation Required' : 'Submit Withdrawal')}
+            {loading ? 'Processing...' : 'Settle Funds'}
           </button>
-          
-          <p className="text-center text-[10px] text-gray-600 font-bold uppercase tracking-widest">
-            {settings.withdrawalSchedule}
-          </p>
         </form>
       </div>
     </div>
