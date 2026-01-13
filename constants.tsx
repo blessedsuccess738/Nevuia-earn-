@@ -15,7 +15,7 @@ export const INITIAL_SETTINGS: AppSettings = {
   telegramChannel: 'https://t.me/channel',
   whatsappLink: 'https://wa.me/yournumber',
   paystackPublicKey: 'pk_test_placeholder_please_replace',
-  nubapiKey: '',
+  nubapiKey: '4uSyi6KbtzZZZwBpE8Lkh31A3Il0k2sQ6kKv4uND962e0daf', // Production Token Added
   maintenanceMode: false,
   announcement: 'Welcome to BeatBucks Global! Start earning by listening to your favorite tracks.'
 };
@@ -566,7 +566,7 @@ const BANK_DATA: Record<string, string> = {
   "050007":"TEKLA FINANCE LTD",
   "050014":"TRINITY FINANCIAL SERVICES LIMITED",
   "090403":"UDA MICROFINANCE BANK",
-  "090341":"UNILORIN MICROFINANCE BANK",
+  "090441":"UNILORIN MICROFINANCE BANK",
   "090338":"UNIUYO MICROFINANCE BANK",
   "050020":"VALE FINANCE LIMITED",
   "090419":"WINVIEW BANK",
