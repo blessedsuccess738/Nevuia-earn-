@@ -8,7 +8,7 @@ import Withdraw from './pages/Withdraw';
 import AdminPanel from './pages/AdminPanel';
 import Activation from './pages/Activation';
 import Navbar from './components/Navbar';
-import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, TransactionStatus } from './types';
+import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, TransactionStatus, Message } from './types';
 import { stateStore } from './store';
 import { ADMIN_EMAIL } from './constants';
 
@@ -29,7 +29,7 @@ const App: React.FC = () => {
           ...state.currentUser,
           dailyEarnings: 0,
           songsListenedToday: 0,
-          playedTracksToday: [], // Clear daily play history
+          playedTracksToday: [],
           lastDailyReset: today
         };
         
@@ -120,6 +120,22 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, currentUser: null }));
   };
 
+  const sendMessage = (text: string) => {
+    if (!state.currentUser) return;
+    const msg: Message = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId: state.currentUser.id,
+      username: state.currentUser.username,
+      text,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    setState(prev => ({
+      ...prev,
+      messages: [msg, ...prev.messages]
+    }));
+  };
+
   const claimDailyReward = useCallback(() => {
     if (!state.currentUser) return;
     const today = new Date().toDateString();
@@ -202,6 +218,7 @@ const App: React.FC = () => {
                   settings={state.settings} 
                   transactions={state.transactions} 
                   onClaimDaily={claimDailyReward}
+                  onSendMessage={sendMessage}
                 />
               </ProtectedRoute>
             } />

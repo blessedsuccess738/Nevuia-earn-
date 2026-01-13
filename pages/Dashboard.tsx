@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { User, AppSettings, Transaction, AccountStatus, PlanTier } from '../types';
 import { PLAN_DETAILS } from '../constants';
@@ -9,9 +9,13 @@ interface DashboardProps {
   settings: AppSettings;
   transactions: Transaction[];
   onClaimDaily: () => void;
+  onSendMessage: (text: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onClaimDaily }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onClaimDaily, onSendMessage }) => {
+  const [supportMsg, setSupportMsg] = useState('');
+  const [showSupportModal, setShowSupportModal] = useState(false);
+
   const ngnBalance = user.balanceUSD * settings.usdToNgnRate;
   const userTransactions = transactions.filter(t => t.userId === user.id);
   const plan = PLAN_DETAILS[user.plan];
@@ -20,6 +24,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
   
   const today = new Date().toDateString();
   const canClaimDaily = user.lastDailyRewardClaimed !== today;
+
+  const handleSubmitSupport = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supportMsg.trim()) return;
+    onSendMessage(supportMsg);
+    setSupportMsg('');
+    alert('Message sent to the support desk. Our admin will review it shortly.');
+    setShowSupportModal(false);
+  };
 
   if (settings.maintenanceMode && user.email !== 'blessedsuccess738@gmail.com') {
     return (
@@ -163,15 +176,49 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
           </div>
           <span className="font-black text-[10px] uppercase tracking-widest text-gray-400 group-hover:text-white">Payout Hub</span>
         </Link>
-        <div className="flex flex-col items-center justify-center p-8 glass-card rounded-3xl border border-white/5 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group cursor-pointer" onClick={() => {
-            navigator.clipboard.writeText(user.referralCode);
-            alert(`Your referral code ${user.referralCode} copied!`);
-        }}>
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <i className="fas fa-share-alt text-purple-500 text-xl"></i>
+        <button onClick={() => setShowSupportModal(true)} className="flex flex-col items-center justify-center p-8 glass-card rounded-3xl border border-white/5 hover:border-red-500/50 hover:bg-red-500/5 transition-all group">
+          <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <i className="fas fa-headset text-red-500 text-xl"></i>
           </div>
-          <span className="font-black text-[10px] uppercase tracking-widest text-gray-400 group-hover:text-white">Copy Invite</span>
-        </div>
+          <span className="font-black text-[10px] uppercase tracking-widest text-gray-400 group-hover:text-white">Contact Desk</span>
+        </button>
+      </div>
+
+      {/* Support & Community Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div className="glass-card rounded-[3rem] p-8 border border-white/5 flex flex-col justify-between">
+            <div>
+               <h3 className="text-xl font-black italic uppercase tracking-tighter mb-4">Official Channels</h3>
+               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-8">Join the community for news, signals, and live updates.</p>
+               <div className="space-y-4">
+                  <a href={settings.telegramChannel} target="_blank" className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all group">
+                     <div className="flex items-center gap-4">
+                        <i className="fab fa-telegram text-blue-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Telegram Channel</span>
+                     </div>
+                     <i className="fas fa-chevron-right text-gray-600"></i>
+                  </a>
+                  <a href={settings.telegramAdmin} target="_blank" className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-blue-400/10 hover:border-blue-400/30 transition-all group">
+                     <div className="flex items-center gap-4">
+                        <i className="fas fa-user-shield text-blue-400 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Telegram Admin</span>
+                     </div>
+                     <i className="fas fa-chevron-right text-gray-600"></i>
+                  </a>
+               </div>
+            </div>
+         </div>
+
+         <div className="glass-card rounded-[3rem] p-8 border border-white/5">
+            <h3 className="text-xl font-black italic uppercase tracking-tighter mb-4">Need Assistance?</h3>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-8">Direct terminal for technical issues or payout queries.</p>
+            <button 
+              onClick={() => setShowSupportModal(true)}
+              className="w-full bg-white text-black font-black py-4 rounded-2xl uppercase tracking-[0.2em] text-xs hover:bg-green-500 transition-all"
+            >
+               Open Support Ticket
+            </button>
+         </div>
       </div>
 
       <div className="glass-card rounded-[3rem] p-8 border border-white/5">
@@ -213,6 +260,29 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
           </div>
         )}
       </div>
+
+      {/* Support Message Modal */}
+      {showSupportModal && (
+         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-6 backdrop-blur-2xl animate-in fade-in duration-300">
+            <div className="glass-card max-w-lg w-full p-10 rounded-[3rem] border border-white/10 relative">
+               <button onClick={() => setShowSupportModal(false)} className="absolute top-8 right-8 text-gray-500 hover:text-white"><i className="fas fa-times"></i></button>
+               <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">Technical Support</h3>
+               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-8">Send a live message to our staff.</p>
+               <form onSubmit={handleSubmitSupport} className="space-y-6">
+                  <textarea 
+                    value={supportMsg} 
+                    onChange={e => setSupportMsg(e.target.value)}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold text-sm h-40 outline-none focus:border-green-500 transition-all resize-none"
+                    placeholder="Describe your issue or question..."
+                  ></textarea>
+                  <button type="submit" className="w-full bg-green-500 text-black font-black py-4 rounded-xl uppercase tracking-widest text-xs shadow-xl shadow-green-500/20 active:scale-95 transition-all">
+                     Transmit Message
+                  </button>
+               </form>
+            </div>
+         </div>
+      )}
     </div>
   );
 };

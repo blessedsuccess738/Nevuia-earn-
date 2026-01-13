@@ -50,6 +50,15 @@ export interface Transaction {
   planRequested?: PlanTier;
 }
 
+export interface Message {
+  id: string;
+  userId: string;
+  username: string;
+  text: string;
+  timestamp: string;
+  read: boolean;
+}
+
 export interface AppSettings {
   usdToNgnRate: number;
   minWithdrawalNGN: number;
@@ -63,8 +72,8 @@ export interface AppSettings {
   whatsappLink: string;
   paystackPublicKey: string;
   nubapiKey: string; 
-  maintenanceMode: boolean; // Added for platform control
-  announcement: string;      // Global announcement text
+  maintenanceMode: boolean;
+  announcement: string;
 }
 
 export interface MusicTrack {
@@ -85,4 +94,5 @@ export interface AppState {
   transactions: Transaction[];
   settings: AppSettings;
   tracks: MusicTrack[];
+  messages: Message[]; // Added for customer support
 }
