@@ -1,0 +1,7 @@
+{
+  "name": "BeatBucks - Listen & Earn",
+  "description": "A professional dark-themed platform where users earn USD by listening to music, featuring real-time conversion to NGN and a secure admin-controlled activation system.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
