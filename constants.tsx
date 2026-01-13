@@ -32,5 +32,35 @@ export const MOCK_TRACKS: MusicTrack[] = [
     artist: 'Afro Beats',
     url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
     duration: 35
+  },
+  {
+    id: '4',
+    title: 'Electric Soul',
+    artist: 'Voltage',
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
+    duration: 50
+  },
+  {
+    id: '5',
+    title: 'Smooth Operator',
+    artist: 'Lofi King',
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',
+    duration: 40
+  },
+  {
+    id: '6',
+    title: 'Cyber City',
+    artist: 'Glitch Mob',
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3',
+    duration: 55
+  },
+  {
+    id: '7',
+    title: 'Ocean Breeze',
+    artist: 'Summer Vibes',
+    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3',
+    duration: 30
   }
 ];
+
+export const SONG_CATEGORIES = ['Trending', 'New Releases', 'Recommended', 'Daily Picks'];
