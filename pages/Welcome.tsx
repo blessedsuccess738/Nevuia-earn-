@@ -10,14 +10,13 @@ interface WelcomeProps {
 type ViewState = 'hero' | 'signup' | 'login';
 
 const LIVE_FEEDS = [
-  { user: 'Oluwaseun', amount: 5500, type: 'Payout' },
-  { user: 'Chioma', amount: 4800, type: 'Activation' },
-  { user: 'Musa', amount: 12000, type: 'Payout' },
-  { user: 'Blessing', amount: 8400, type: 'Activation' },
-  { user: 'Emeka', amount: 7200, type: 'Payout' },
+  { user: 'Oluwaseun', amount: 5500 },
+  { user: 'Chioma', amount: 4800 },
+  { user: 'Musa', amount: 12000 },
+  { user: 'Blessing', amount: 8400 },
+  { user: 'Emeka', amount: 7200 },
 ];
 
-// Replaced abstract bubbles with the specific brand elements provided
 const BUBBLES = [
   { type: 'custom-b', color: '#00ffff', top: '15%', left: '10%', size: '5rem', delay: '0s' },
   { type: 'custom-wave', color: '#ff8c00', top: '75%', left: '75%', size: '6rem', delay: '1.5s' },
@@ -25,7 +24,6 @@ const BUBBLES = [
   { icon: 'fa-apple', color: '#FFFFFF', top: '55%', left: '5%', size: '4rem', delay: '4.5s' },
   { type: 'custom-b', color: '#00ffff', top: '85%', left: '20%', size: '3rem', delay: '2s' },
   { type: 'custom-wave', color: '#ff8c00', top: '10%', left: '60%', size: '3.5rem', delay: '5s' },
-  { icon: 'fa-play', color: '#f6d72a', top: '45%', left: '45%', size: '2.5rem', delay: '6s' },
 ];
 
 const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
@@ -82,18 +80,28 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
     </div>
   );
 
+  const BackgroundElements = () => (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {BUBBLES.map((b, i) => (
+        <div key={i} className="bubble-icon absolute opacity-20" style={{ 
+          top: b.top, 
+          left: b.left, 
+          animationDelay: b.delay,
+          animationDuration: `${10 + i * 2}s`
+        }}>
+           {b.type === 'custom-b' ? <CustomBLogo color={b.color} size={b.size} /> : 
+            b.type === 'custom-wave' ? <CustomWaveLogo color={b.color} size={b.size} /> :
+            <i className={`fab ${b.icon}`} style={{ color: b.color, fontSize: b.size }}></i>}
+        </div>
+      ))}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,_rgba(34,197,94,0.1),_transparent_70%)]"></div>
+    </div>
+  );
+
   if (view !== 'hero') {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        {/* Auth Background Bubbles */}
-        {BUBBLES.map((b, i) => (
-          <div key={i} className="bubble-icon absolute" style={{ top: b.top, left: b.left, animationDelay: b.delay }}>
-             {b.type === 'custom-b' ? <CustomBLogo color={b.color} size={b.size} /> : 
-              b.type === 'custom-wave' ? <CustomWaveLogo color={b.color} size={b.size} /> :
-              <i className={`fab ${b.icon}`} style={{ color: b.color, fontSize: b.size }}></i>}
-          </div>
-        ))}
-
+        <BackgroundElements />
         <div className="relative z-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-400">
           <div className="glass-card p-8 rounded-[3rem] border border-white/10 relative overflow-hidden w-full">
             <div className="text-center mb-6">
@@ -153,17 +161,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col relative overflow-x-hidden">
-      {/* Dynamic Bubble Background with Brand Icons */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {BUBBLES.map((b, i) => (
-          <div key={i} className="bubble-icon absolute" style={{ top: b.top, left: b.left, animationDelay: b.delay }}>
-             {b.type === 'custom-b' ? <CustomBLogo color={b.color} size={b.size} className="opacity-20" /> : 
-              b.type === 'custom-wave' ? <CustomWaveLogo color={b.color} size={b.size} className="opacity-20" /> :
-              <i className={`fab ${b.icon} opacity-20`} style={{ color: b.color, fontSize: b.size }}></i>}
-          </div>
-        ))}
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,_rgba(34,197,94,0.15),_transparent_60%)]"></div>
-      </div>
+      <BackgroundElements />
 
       {/* Corporate Nav Bar */}
       <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 px-6 flex justify-between items-center">
@@ -218,7 +216,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
           </div>
         </section>
 
-        {/* Institutional Partners Grid - Updated with Custom Icons */}
+        {/* Institutional Partners Grid - Restored with Custom Icons */}
         <section className="mb-24">
            <p className="text-center text-[10px] text-gray-600 font-black uppercase tracking-[0.4em] mb-8">Integrated Ecosystem Partners</p>
            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -241,7 +239,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
            </div>
         </section>
 
-        {/* Core Value Pillars */}
+        {/* Core Value Pillars - Restored */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
            <div className="glass-card p-10 rounded-[3rem] border border-white/5 space-y-4">
               <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500 text-xl">
@@ -266,7 +264,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
            </div>
         </section>
 
-        {/* Long Text Deep Resources */}
+        {/* Liquidity Logic - Restored */}
         <section className="space-y-12 mb-24">
            <div className="bg-white/5 border border-white/5 p-12 rounded-[4rem]">
               <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-6">The Liquidity Logic</h2>
@@ -310,11 +308,11 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
         </section>
       </main>
 
-      {/* Corporate Footer Resources */}
-      <footer className="w-full bg-black border-t border-white/5 pt-16 pb-12 px-8 relative z-10">
+      {/* Corporate Footer - Restored */}
+      <footer className="w-full bg-black border-t border-white/5 pt-16 pb-12 px-8 relative z-10 text-center md:text-left">
          <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
             <div className="col-span-2 md:col-span-1 space-y-6">
-               <div className="flex items-center gap-2">
+               <div className="flex items-center gap-2 justify-center md:justify-start">
                   <div className="w-6 h-6 bg-[#00ffff] rounded flex items-center justify-center">
                     <CustomBLogo color="black" size="10px" />
                   </div>
@@ -342,7 +340,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
             </div>
             <div className="space-y-4">
                <h5 className="text-[10px] font-black text-white uppercase tracking-widest">Connect</h5>
-               <div className="flex gap-4">
+               <div className="flex gap-4 justify-center md:justify-start">
                   <i className="fab fa-twitter text-gray-500 hover:text-white cursor-pointer transition-colors"></i>
                   <i className="fab fa-telegram text-gray-500 hover:text-white cursor-pointer transition-colors"></i>
                </div>

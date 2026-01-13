@@ -27,6 +27,7 @@ export interface User {
   totalSongs: number;
   dailyEarnings: number;
   songsListenedToday: number;
+  playedTracksToday: string[]; // List of IDs of tracks played today
   status: AccountStatus;
   plan: PlanTier;
   referralCode: string;
@@ -72,4 +73,13 @@ export interface MusicTrack {
   duration: number;
   earningUSD: number;
   category: string;
+  enabled: boolean;
+}
+
+export interface AppState {
+  users: User[];
+  currentUser: User | null;
+  transactions: Transaction[];
+  settings: AppSettings;
+  tracks: MusicTrack[];
 }

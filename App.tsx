@@ -29,6 +29,7 @@ const App: React.FC = () => {
           ...state.currentUser,
           dailyEarnings: 0,
           songsListenedToday: 0,
+          playedTracksToday: [], // Clear daily play history
           lastDailyReset: today
         };
         
@@ -62,6 +63,7 @@ const App: React.FC = () => {
       totalSongs: 0,
       dailyEarnings: 0,
       songsListenedToday: 0,
+      playedTracksToday: [],
       status: isAdmin ? AccountStatus.ACTIVATED : AccountStatus.NOT_ACTIVATED,
       plan: isAdmin ? PlanTier.PREMIUM : PlanTier.FREE,
       referralCode: Math.random().toString(36).substr(2, 6).toUpperCase(),
@@ -77,7 +79,6 @@ const App: React.FC = () => {
       const referrer = state.users.find(u => u.referralCode === referralCode.toUpperCase());
       if (referrer) {
         newUser.referredBy = referrer.id;
-        // Referrer bonus is handled on sign up in this model
         const referralBonus = state.settings.referralBonusUSD;
         const updatedReferrer = {
           ...referrer,
@@ -88,7 +89,6 @@ const App: React.FC = () => {
         
         updatedUsers = updatedUsers.map(u => u.id === referrer.id ? updatedReferrer : u);
         
-        // Add transaction record for referrer
         const referralTxn: Transaction = {
           id: Math.random().toString(36).substr(2, 9),
           userId: referrer.id,
@@ -150,14 +150,15 @@ const App: React.FC = () => {
     }));
   }, [state.currentUser, state.settings.dailyRewardUSD]);
 
-  const updateBalance = (amount: number) => {
+  const updateBalance = (amount: number, trackId: string) => {
     if (!state.currentUser) return;
     const updatedUser = {
       ...state.currentUser,
       balanceUSD: state.currentUser.balanceUSD + amount,
       totalSongs: state.currentUser.totalSongs + 1,
       dailyEarnings: state.currentUser.dailyEarnings + amount,
-      songsListenedToday: state.currentUser.songsListenedToday + 1
+      songsListenedToday: state.currentUser.songsListenedToday + 1,
+      playedTracksToday: [...state.currentUser.playedTracksToday, trackId]
     };
     setState(prev => ({
       ...prev,

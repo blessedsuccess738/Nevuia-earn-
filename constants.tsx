@@ -53,7 +53,8 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=300&q=80',
     duration: 45,
     earningUSD: 0.15,
-    category: 'Trending'
+    category: 'Trending',
+    enabled: true
   },
   { 
     id: '2', 
@@ -63,7 +64,8 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=300&q=80',
     duration: 60,
     earningUSD: 0.20,
-    category: 'New Releases'
+    category: 'New Releases',
+    enabled: true
   },
   { 
     id: '3', 
@@ -73,7 +75,8 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=300&q=80',
     duration: 35,
     earningUSD: 0.12,
-    category: 'Trending'
+    category: 'Trending',
+    enabled: true
   }
 ];
 
