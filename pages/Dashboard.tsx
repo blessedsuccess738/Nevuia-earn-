@@ -69,16 +69,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions }) =
           <p className="text-gray-500 text-[10px] font-black uppercase mb-1 tracking-widest">Withdrawal Status</p>
           <div className="flex items-baseline gap-2">
             <h2 className="text-xl font-black text-white">
-              {user.status === AccountStatus.ACTIVATED ? 'UNLOCKED' : 'LOCKED'}
+              {settings.isWithdrawalOpen ? (user.status === AccountStatus.ACTIVATED ? 'OPEN' : 'LOCKED') : 'CLOSED'}
             </h2>
           </div>
           <p className="text-orange-500 text-[10px] font-bold mt-2 uppercase tracking-tight">
-            {user.status === AccountStatus.ACTIVATED ? 'Withdrawals enabled' : 'Activate to withdraw'}
+             {settings.isWithdrawalOpen ? (user.status === AccountStatus.ACTIVATED ? 'Ready to payout' : 'Activate to unlock') : settings.withdrawalSchedule}
           </p>
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Link to="/listen" className="flex flex-col items-center justify-center p-6 glass-card rounded-2xl border border-white/5 hover:border-green-500 transition-all group">
           <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -106,7 +105,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions }) =
         </button>
       </div>
 
-      {/* Recent Activity */}
+      {/* Social & Support Hub */}
+      <div className="glass-card rounded-3xl p-8 border border-white/5">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <h3 className="text-2xl font-black uppercase tracking-tighter italic">Support Center</h3>
+            <p className="text-gray-500 text-sm font-medium">Connect with our community and official support lines.</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+             <a href={settings.telegramChannel} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-6 py-4 bg-[#0088cc]/10 border border-[#0088cc]/20 rounded-2xl text-[#0088cc] hover:bg-[#0088cc]/20 transition-all">
+               <i className="fab fa-telegram-plane text-xl"></i>
+               <span className="font-black text-xs uppercase tracking-widest">Channel</span>
+             </a>
+             <a href={settings.telegramAdmin} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-6 py-4 bg-green-500/10 border border-green-500/20 rounded-2xl text-green-500 hover:bg-green-500/20 transition-all">
+               <i className="fas fa-user-shield text-xl"></i>
+               <span className="font-black text-xs uppercase tracking-widest">Admin</span>
+             </a>
+             <a href={settings.whatsappLink} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-6 py-4 bg-[#25D366]/10 border border-[#25D366]/20 rounded-2xl text-[#25D366] hover:bg-[#25D366]/20 transition-all">
+               <i className="fab fa-whatsapp text-xl"></i>
+               <span className="font-black text-xs uppercase tracking-widest">WhatsApp</span>
+             </a>
+          </div>
+        </div>
+      </div>
+
       <div className="glass-card rounded-3xl p-6 border border-white/5">
         <h3 className="text-xl font-bold mb-6">Recent Activity</h3>
         {userTransactions.length === 0 ? (

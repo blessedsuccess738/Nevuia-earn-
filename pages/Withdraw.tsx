@@ -21,7 +21,8 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
   const [msg, setMsg] = useState({ type: '', text: '' });
 
   const plan = PLAN_DETAILS[user.plan];
-  const canWithdraw = plan.canWithdraw && user.status === AccountStatus.ACTIVATED;
+  const isActivated = user.status === AccountStatus.ACTIVATED;
+  const canWithdraw = plan.canWithdraw && isActivated && settings.isWithdrawalOpen;
   const withdrawAmountNGN = parseFloat(withdrawAmountUSD) * settings.usdToNgnRate || 0;
 
   const handleWithdrawal = (e: React.FormEvent) => {
@@ -29,8 +30,13 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
     const amountUSD = parseFloat(withdrawAmountUSD);
     const amountNGN = amountUSD * settings.usdToNgnRate;
     
-    if (!canWithdraw) {
-      setMsg({ type: 'error', text: 'You must activate a premium plan before withdrawing.' });
+    if (!settings.isWithdrawalOpen) {
+      setMsg({ type: 'error', text: `Portal Closed: ${settings.withdrawalSchedule}` });
+      return;
+    }
+
+    if (!isActivated) {
+      setMsg({ type: 'error', text: 'You must activate a professional plan before withdrawing.' });
       return;
     }
     
@@ -68,44 +74,38 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
       setLoading(false);
       setMsg({ type: 'success', text: 'Withdrawal request submitted for processing.' });
       setWithdrawAmountUSD('');
+      setBankName('');
+      setAccountNumber('');
+      setAccountName('');
     }, 1500);
   };
-
-  if (!canWithdraw) {
-    return (
-      <div className="max-w-2xl mx-auto p-6 md:p-12 text-center">
-        <div className="glass-card p-12 rounded-[3.5rem] border border-yellow-500/20">
-          <div className="w-24 h-24 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
-            <i className="fas fa-lock text-yellow-500 text-4xl"></i>
-          </div>
-          <h2 className="text-4xl font-black mb-4 uppercase italic tracking-tighter">Withdrawals Locked</h2>
-          <p className="text-gray-400 mb-10 leading-relaxed font-medium">
-            Free users can earn rewards but cannot withdraw funds. To unlock withdrawals and enjoy higher limits, please activate a professional plan.
-          </p>
-          
-          <button 
-            onClick={() => navigate('/activation')}
-            className="w-full bg-green-500 text-black font-black py-5 rounded-2xl hover:bg-green-400 transition-all flex items-center justify-center gap-3 uppercase tracking-widest shadow-xl shadow-green-500/20"
-          >
-            <i className="fas fa-bolt"></i>
-            Activate to Withdraw
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-3xl mx-auto p-6 md:p-12">
       <div className="glass-card p-10 md:p-14 rounded-[4rem] border border-white/5 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8">
-           <span className="bg-green-500/10 text-green-500 text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest border border-green-500/20">
-             Plan: {plan.name}
+           <span className={`text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest border ${
+             settings.isWithdrawalOpen ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+           }`}>
+             Portal: {settings.isWithdrawalOpen ? 'Open' : 'Closed'}
            </span>
         </div>
 
         <h2 className="text-4xl font-black mb-2 uppercase italic tracking-tighter">Cash Out</h2>
         <p className="text-gray-500 mb-12 font-medium">Securely withdraw your earnings to your local bank account.</p>
+
+        {!isActivated && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 p-6 rounded-3xl mb-10 flex flex-col md:flex-row items-center justify-between gap-4">
+             <div className="flex items-center gap-4">
+                <i className="fas fa-lock text-yellow-500 text-2xl"></i>
+                <div>
+                   <h4 className="text-white font-black text-sm uppercase">Account Not Activated</h4>
+                   <p className="text-xs text-gray-500 font-medium">Activation is required for all withdrawals.</p>
+                </div>
+             </div>
+             <button onClick={() => navigate('/activation')} className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase">Activate Now</button>
+          </div>
+        )}
 
         {msg.text && (
           <div className={`p-5 rounded-2xl mb-8 flex items-center gap-4 animate-in fade-in duration-300 ${msg.type === 'error' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'}`}>
@@ -187,19 +187,21 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
 
           <button 
             type="submit"
-            disabled={loading}
-            className="w-full bg-green-500 text-black font-black py-6 rounded-[2rem] hover:bg-green-400 transition-all shadow-2xl shadow-green-500/20 uppercase tracking-[0.2em] text-lg active:scale-95"
+            disabled={loading || !isActivated || !settings.isWithdrawalOpen}
+            className={`w-full py-6 rounded-[2rem] font-black transition-all shadow-2xl uppercase tracking-[0.2em] text-lg active:scale-95 ${
+              loading || !isActivated || !settings.isWithdrawalOpen ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-green-500 text-black hover:bg-green-400 shadow-green-500/20'
+            }`}
           >
             {loading ? (
                <div className="flex items-center justify-center gap-3">
                  <div className="w-5 h-5 border-4 border-black/30 border-t-black rounded-full animate-spin"></div>
                  Processing...
                </div>
-            ) : 'Submit Withdrawal'}
+            ) : (!settings.isWithdrawalOpen ? 'Portal Closed' : !isActivated ? 'Activation Required' : 'Submit Withdrawal')}
           </button>
           
           <p className="text-center text-[10px] text-gray-600 font-bold uppercase tracking-widest">
-            Withdrawals are processed within 24 hours of request.
+            {settings.withdrawalSchedule}
           </p>
         </form>
       </div>

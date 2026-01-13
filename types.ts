@@ -50,6 +50,11 @@ export interface AppSettings {
   minWithdrawalNGN: number;
   dailyCapUSD: number;
   referralBonusUSD: number;
+  isWithdrawalOpen: boolean;
+  withdrawalSchedule: string;
+  telegramAdmin: string;
+  telegramChannel: string;
+  whatsappLink: string;
 }
 
 export interface MusicTrack {

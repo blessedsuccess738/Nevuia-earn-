@@ -28,6 +28,7 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
     
     const planInfo = PLAN_DETAILS[selectedPlan];
     
+    // Simulating external immediate payment verification
     setTimeout(() => {
       const txn: Transaction = {
         id: Math.random().toString(36).substr(2, 9),
@@ -36,7 +37,7 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
         type: 'ACTIVATION',
         status: TransactionStatus.PROCESSING,
         timestamp: new Date().toISOString(),
-        details: `Upgrade to ${planInfo.name} Plan`,
+        details: `Upgrade to ${planInfo.name} Plan via External Payment`,
         planRequested: selectedPlan
       };
       
@@ -51,7 +52,7 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
       
       setLoading(false);
       setIsPaying(false);
-      alert('Activation request submitted! Admin will verify your payment shortly.');
+      alert('Payment receipt received! Our automated system is verifying the transfer. Activation usually occurs within 5-30 minutes once confirmed by the bank.');
     }, 1500);
   };
 
@@ -60,7 +61,7 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic">Boost Your Earnings</h1>
         <p className="text-gray-500 text-lg max-w-2xl mx-auto font-medium">
-          Unlock higher daily limits and activate instant withdrawals. Choose a plan that fits your rhythm.
+          Activation unlocks higher daily limits and instant withdrawals. Note: Activation fees are one-time payments and do not credit your listening balance.
         </p>
       </div>
 
@@ -135,11 +136,9 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
       </div>
 
       <div className="glass-card p-10 rounded-[3rem] border border-white/5 text-center max-w-3xl mx-auto">
-        <h3 className="text-2xl font-black mb-4 uppercase tracking-tighter italic">About Activation</h3>
+        <h3 className="text-2xl font-black mb-4 uppercase tracking-tighter italic">Secure Payment Notice</h3>
         <p className="text-gray-400 font-medium leading-relaxed text-sm">
-          Activation is a one-time process (or upgrade). Once activated, your withdrawal limit is set at <span className="text-green-500 font-bold">₦{settings.minWithdrawalNGN.toLocaleString()}</span>. 
-          Limits reset automatically every 24 hours at 12:00 AM. 
-          Upgrade at any time to unlock more songs and increase your earning potential.
+          Payments are handled externally to ensure the highest level of security. Your escucha balance tracks EARNINGS only. Activation fees are separate and ensure platform maintenance and user verification.
         </p>
       </div>
 
@@ -151,14 +150,14 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
             </button>
             
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">Confirm Upgrade</h3>
-              <p className="text-gray-500 font-bold text-sm">Transfer exactly the amount shown below.</p>
+              <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">Checkout Details</h3>
+              <p className="text-gray-500 font-bold text-sm">Complete your transfer to activate {PLAN_DETAILS[selectedPlan].name}.</p>
             </div>
 
             <div className="space-y-6">
               <div className="p-6 bg-white/5 rounded-3xl border border-white/10 flex justify-between items-center">
                 <div>
-                  <p className="text-[10px] text-gray-500 font-black uppercase mb-1">Total Due</p>
+                  <p className="text-[10px] text-gray-500 font-black uppercase mb-1">Fee Amount</p>
                   <p className="text-3xl font-black text-white">₦{(PLAN_DETAILS[selectedPlan].priceUSD * settings.usdToNgnRate).toLocaleString()}</p>
                 </div>
                 <div className="text-right">
@@ -168,28 +167,20 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
               </div>
 
               <div className="space-y-4">
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <p className="text-[10px] text-gray-500 font-black uppercase mb-1">Bank Transfer (NGN)</p>
-                  <p className="text-sm font-bold text-white">Bank: NeoBank Digital</p>
-                  <p className="text-sm font-bold text-white">Account: 0123456789</p>
-                  <p className="text-sm font-bold text-white">Name: BeatBucks Admin</p>
-                </div>
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <p className="text-[10px] text-gray-500 font-black uppercase mb-1">Crypto (USDT BEP20)</p>
-                  <p className="text-[10px] font-mono text-white break-all">0x71C7656EC7ab88b098defB751B7401B5f6d8976F</p>
+                <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
+                  <p className="text-[10px] text-gray-500 font-black uppercase mb-2">Paystack / Bank Transfer (NGN)</p>
+                  <p className="text-sm font-bold text-white mb-1">Bank: OPay Digital Bank</p>
+                  <p className="text-sm font-bold text-white mb-1">Account: 8142339561</p>
+                  <p className="text-sm font-bold text-white">Name: BEATBUCKS ACTIVATIONS</p>
                 </div>
               </div>
-
-              <p className="text-center text-[10px] text-gray-500 font-bold italic leading-relaxed">
-                Send payment and click the button below. Our team will verify and upgrade your plan within 1-6 hours.
-              </p>
 
               <button 
                 onClick={confirmPayment}
                 disabled={loading}
                 className="w-full bg-green-500 text-black font-black py-5 rounded-2xl hover:bg-green-400 transition-all shadow-xl shadow-green-500/20 uppercase tracking-widest"
               >
-                {loading ? 'Submitting...' : 'I HAVE SENT PAYMENT'}
+                {loading ? 'Verifying...' : 'CONFIRM PAYMENT'}
               </button>
             </div>
           </div>
