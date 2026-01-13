@@ -36,8 +36,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, settings, transactions, onC
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-24">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-24 relative">
       
+      {/* Live Support Floating Button */}
+      <a 
+        href={settings.whatsappLink} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-[60] group"
+      >
+        <div className="absolute -top-12 right-0 bg-green-500 text-black text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl">
+          Chat Live Admin
+        </div>
+        <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center text-black text-2xl shadow-[0_10px_40px_rgba(34,197,94,0.5)] hover:scale-110 active:scale-90 transition-all">
+          <i className="fab fa-whatsapp"></i>
+        </div>
+      </a>
+
       {/* Global Announcement Ticker */}
       {settings.announcement && (
         <div className="relative overflow-hidden bg-white/5 border border-white/5 rounded-2xl py-3 px-6 group">

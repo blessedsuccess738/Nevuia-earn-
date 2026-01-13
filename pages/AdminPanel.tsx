@@ -62,6 +62,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ state, onUpdateSettings, onUpda
         transactions: prev.transactions.map((t: Transaction) => t.id === txnId ? { ...t, status } : t)
       }));
     } else if (txn.type === 'WITHDRAWAL' && status === TransactionStatus.REJECTED) {
+      // Refund balance on withdrawal rejection
       setState((prev: any) => ({
         ...prev,
         users: prev.users.map((u: User) => u.id === txn.userId ? { ...u, balanceUSD: u.balanceUSD + txn.amountUSD } : u),
@@ -82,7 +83,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ state, onUpdateSettings, onUpda
     }));
   };
 
-  const adjustBalance = (userId: string, amount: number) => {
+  const adjustBalance = (userId: string) => {
+    const amountStr = prompt("Enter amount to adjust (can be negative to subtract):", "0");
+    if (amountStr === null) return;
+    const amount = parseFloat(amountStr);
+    if (isNaN(amount)) return;
+
     setState((prev: any) => ({
       ...prev,
       users: prev.users.map((u: User) => u.id === userId ? { ...u, balanceUSD: u.balanceUSD + amount } : u)
@@ -191,7 +197,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ state, onUpdateSettings, onUpda
                                </td>
                                <td className="p-8 text-right space-x-2">
                                   <button onClick={() => handleTxnAction(t.id, TransactionStatus.APPROVED)} className="bg-green-500 text-black px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase hover:scale-105 transition-all shadow-lg shadow-green-500/20 tracking-widest">Approve</button>
-                                  <button onClick={() => handleTxnAction(t.id, TransactionStatus.REJECTED)} className="bg-red-500/10 text-red-500 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all tracking-widest border border-red-500/10">Deny</button>
+                                  <button onClick={() => handleTxnAction(t.id, TransactionStatus.REJECTED)} className="bg-red-500/10 text-red-500 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all tracking-widest border border-red-500/10">Decline</button>
                                </td>
                             </tr>
                           );
@@ -261,7 +267,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ state, onUpdateSettings, onUpda
                                 <span className="text-gray-600 ml-1">/ {PLAN_DETAILS[u.plan].songLimit === Infinity ? '∞' : PLAN_DETAILS[u.plan].songLimit}</span>
                              </td>
                              <td className="p-8 text-right space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => adjustBalance(u.id, 1)} className="p-3 rounded-2xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all"><i className="fas fa-plus-circle"></i></button>
+                                <button onClick={() => adjustBalance(u.id)} className="p-3 rounded-2xl bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all"><i className="fas fa-edit"></i> Edit Bal</button>
                                 <button onClick={() => updateUserStatus(u.id, u.status === AccountStatus.BANNED ? AccountStatus.ACTIVATED : AccountStatus.BANNED)} className={`p-3 rounded-2xl transition-all ${u.status === AccountStatus.BANNED ? 'bg-green-500 text-black' : 'bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white'}`}>
                                    <i className={`fas ${u.status === AccountStatus.BANNED ? 'fa-unlock' : 'fa-user-slash'}`}></i>
                                 </button>
