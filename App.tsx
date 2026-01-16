@@ -7,6 +7,7 @@ import ListenEarn from './pages/ListenEarn';
 import Withdraw from './pages/Withdraw';
 import AdminPanel from './pages/AdminPanel';
 import Activation from './pages/Activation';
+import Settings from './pages/Settings';
 import Navbar from './components/Navbar';
 import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, TransactionStatus, Message, Notification, AdminNotification, PublicChatMessage } from './types';
 import { stateStore } from './store';
@@ -153,25 +154,24 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col relative overflow-hidden">
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#050505]">
         {state.settings.videoBackgroundUrl && (
           <video 
             autoPlay 
             loop 
             muted 
             playsInline 
-            className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-30 grayscale"
+            className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-20 grayscale"
           >
             <source src={state.settings.videoBackgroundUrl} type="video/mp4" />
           </video>
         )}
-        <div className="fixed inset-0 bg-[#050505]/60 z-[-1]"></div>
-
+        
         {/* New Song Notification */}
         {showNewTrackNotify && (
           <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] w-[90%] max-w-sm animate-in slide-in-from-top-4 duration-500">
-             <div className="bg-gradient-to-r from-red-600 to-red-900 p-4 rounded-2xl shadow-2xl border border-white/20 flex items-center gap-4">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-600 animate-bounce">
+             <div className="bg-gradient-to-r from-green-600 to-green-900 p-4 rounded-2xl shadow-2xl border border-white/20 flex items-center gap-4">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-green-600 animate-bounce">
                    <i className="fas fa-music"></i>
                 </div>
                 <div>
@@ -184,7 +184,7 @@ const App: React.FC = () => {
         )}
 
         {state.currentUser && <Navbar user={state.currentUser} onLogout={logout} />}
-        <main className="flex-grow">
+        <main className="flex-grow flex flex-col">
           <Routes>
             <Route path="/" element={<Welcome onLogin={login} onRegister={register} />} />
             <Route path="/dashboard" element={
@@ -200,6 +200,11 @@ const App: React.FC = () => {
                   messages={state.messages}
                   publicChat={state.publicChat || []}
                 />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings user={state.currentUser!} />
               </ProtectedRoute>
             } />
             <Route path="/listen" element={
