@@ -71,7 +71,8 @@ const App: React.FC = () => {
       lastDailyReset: new Date().toDateString(),
       referralsCount: 0,
       referralEarningsUSD: 0,
-      notifications: []
+      notifications: [],
+      createdAt: new Date().toISOString() // Set creation date
     };
 
     let updatedUsers = [...state.users, newUser];

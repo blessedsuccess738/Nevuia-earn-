@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BOOMPLAY_PNG, AUDIOMACK_PNG, SPOTIFY_PNG } from '../constants';
 
 interface WelcomeProps {
   onLogin: (email: string) => boolean;
@@ -18,12 +19,12 @@ const LIVE_FEEDS = [
 ];
 
 const BUBBLES = [
-  { type: 'custom-b', color: '#00ffff', top: '15%', left: '10%', size: '5rem', delay: '0s' },
-  { type: 'custom-wave', color: '#ff8c00', top: '75%', left: '75%', size: '6rem', delay: '1.5s' },
-  { icon: 'fa-spotify', color: '#1DB954', top: '35%', left: '85%', size: '3.5rem', delay: '3s' },
-  { icon: 'fa-apple', color: '#FFFFFF', top: '55%', left: '5%', size: '4rem', delay: '4.5s' },
-  { type: 'custom-b', color: '#00ffff', top: '85%', left: '20%', size: '3rem', delay: '2s' },
-  { type: 'custom-wave', color: '#ff8c00', top: '10%', left: '60%', size: '3.5rem', delay: '5s' },
+  { img: SPOTIFY_PNG, top: '35%', left: '85%', size: '3.5rem', delay: '3s' },
+  { img: AUDIOMACK_PNG, top: '75%', left: '75%', size: '6rem', delay: '1.5s' },
+  { img: BOOMPLAY_PNG, top: '15%', left: '10%', size: '5rem', delay: '0s' },
+  { img: SPOTIFY_PNG, top: '55%', left: '5%', size: '4rem', delay: '4.5s' },
+  { img: BOOMPLAY_PNG, top: '85%', left: '20%', size: '3rem', delay: '2s' },
+  { img: AUDIOMACK_PNG, top: '10%', left: '60%', size: '3.5rem', delay: '5s' },
 ];
 
 const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
@@ -68,18 +69,6 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
     }
   };
 
-  const CustomBLogo = ({ color, size, className }: { color: string, size: string, className?: string }) => (
-    <div className={`flex items-center justify-center font-black italic select-none ${className}`} style={{ fontSize: size, color: color, textShadow: `0 0 20px ${color}66` }}>
-      B
-    </div>
-  );
-
-  const CustomWaveLogo = ({ color, size, className }: { color: string, size: string, className?: string }) => (
-    <div className={`flex items-center justify-center select-none ${className}`} style={{ fontSize: size, color: color, filter: `drop-shadow(0 0 10px ${color}aa)` }}>
-      <i className="fas fa-wave-square"></i>
-    </div>
-  );
-
   const BackgroundElements = () => (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {BUBBLES.map((b, i) => (
@@ -89,9 +78,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
           animationDelay: b.delay,
           animationDuration: `${10 + i * 2}s`
         }}>
-           {b.type === 'custom-b' ? <CustomBLogo color={b.color} size={b.size} /> : 
-            b.type === 'custom-wave' ? <CustomWaveLogo color={b.color} size={b.size} /> :
-            <i className={`fab ${b.icon}`} style={{ color: b.color, fontSize: b.size }}></i>}
+           <img src={b.img} style={{ width: b.size, height: b.size, objectFit: 'contain' }} alt="" />
         </div>
       ))}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,_rgba(34,197,94,0.1),_transparent_70%)]"></div>
@@ -163,197 +150,129 @@ const Welcome: React.FC<WelcomeProps> = ({ onLogin, onRegister }) => {
     <div className="min-h-screen bg-[#050505] text-white flex flex-col relative overflow-x-hidden">
       <BackgroundElements />
 
-      {/* Corporate Nav Bar */}
-      <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 px-6 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#00ffff] rounded-lg flex items-center justify-center shadow-lg">
-             <CustomBLogo color="black" size="14px" />
+      <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-4 px-6 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+             <i className="fas fa-headphones text-black text-sm"></i>
           </div>
-          <span className="font-black italic tracking-tighter text-sm uppercase">BeatBucks Global</span>
+          <span className="font-black italic tracking-tighter text-lg uppercase neon-glow">BeatBucks Global</span>
         </div>
         <div className="flex gap-4">
            <button onClick={() => setView('login')} className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Client Login</button>
-           <button onClick={() => setView('signup')} className="bg-white text-black px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-green-500 transition-all">Join Network</button>
+           <button onClick={() => setView('signup')} className="bg-white text-black px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-green-500 transition-all">Join Network</button>
         </div>
       </nav>
 
-      {/* Main Content Sections */}
-      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-12">
-        {/* Live Ticker Banner */}
-        <div className="w-fit mx-auto bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-8 flex items-center gap-3 animate-in fade-in duration-1000">
-          <span className="relative flex h-2 w-2">
+      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-16">
+        <div className="w-fit mx-auto bg-white/5 border border-white/10 px-6 py-3 rounded-full mb-12 flex items-center gap-4 animate-in fade-in duration-1000 shadow-2xl">
+          <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
           </span>
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-             Live Liquidity Injection: <span className="text-white">@{LIVE_FEEDS[feedIndex].user}</span> 
-             <span className="mx-2 text-green-500 font-black">+₦{LIVE_FEEDS[feedIndex].amount.toLocaleString()}</span>
+          <p className="text-[11px] font-black uppercase tracking-widest text-gray-400">
+             Live Liquidity Injection: <span className="text-white italic">@{LIVE_FEEDS[feedIndex].user}</span> 
+             <span className="mx-3 text-green-500 font-black">+₦{LIVE_FEEDS[feedIndex].amount.toLocaleString()}</span>
           </p>
         </div>
 
-        {/* Hero Section */}
         <section className="text-center mb-24 animate-in fade-in slide-in-from-bottom-6 duration-700">
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] uppercase mb-6 italic">
+          <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.85] uppercase mb-8 italic">
             MONETIZE YOUR <br /> <span className="text-green-500">ATTENTION SPAN.</span>
           </h1>
-          <p className="text-gray-500 text-sm md:text-base font-medium max-w-2xl mx-auto mb-10 leading-relaxed uppercase tracking-widest">
-            The world's leading institutional bridge for audio-based revenue. Convert professional streams into secure USD liquidity daily.
+          <p className="text-gray-500 text-sm md:text-lg font-medium max-w-2xl mx-auto mb-12 leading-relaxed uppercase tracking-[0.2em]">
+            The industry's leading institutional bridge for audio capital. Convert verified streams into secure liquidity daily.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <button 
               onClick={() => setView('signup')}
-              className="px-10 py-5 bg-green-500 text-black font-black rounded-2xl shadow-[0_20px_60px_rgba(34,197,94,0.3)] text-base uppercase tracking-[0.2em] active:scale-95 transition-all"
+              className="px-14 py-6 bg-green-500 text-black font-black rounded-2xl shadow-[0_20px_60px_rgba(34,197,94,0.4)] text-lg uppercase tracking-[0.2em] active:scale-95 transition-all"
             >
               GET STARTED
             </button>
             <button 
               onClick={() => setView('login')}
-              className="px-10 py-5 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 text-base uppercase tracking-[0.2em] active:scale-95 transition-all"
+              className="px-14 py-6 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 text-lg uppercase tracking-[0.2em] active:scale-95 transition-all"
             >
               SIGN IN
             </button>
           </div>
         </section>
 
-        {/* Institutional Partners Grid - Restored with Custom Icons */}
-        <section className="mb-24">
-           <p className="text-center text-[10px] text-gray-600 font-black uppercase tracking-[0.4em] mb-8">Integrated Ecosystem Partners</p>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="glass-card p-8 rounded-3xl border border-white/5 flex flex-col items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-crosshair">
-                  <CustomBLogo color="#00ffff" size="32px" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">BEATBUCKS PRO</span>
+        <section className="mb-32">
+           <p className="text-center text-[10px] text-gray-600 font-black uppercase tracking-[0.5em] mb-12">Integrated Distribution Ecosystem</p>
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div className="glass-card p-10 rounded-3xl border border-white/5 flex flex-col items-center gap-4 hover:bg-white/5 transition-all group shadow-xl">
+                  <i className="fab fa-spotify text-4xl text-green-500 group-hover:scale-110 transition-transform"></i>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white">SPOTIFY</span>
               </div>
-              <div className="glass-card p-8 rounded-3xl border border-white/5 flex flex-col items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-crosshair">
-                  <CustomWaveLogo color="#ff8c00" size="32px" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">AUDIO-MAXX</span>
+              <div className="glass-card p-10 rounded-3xl border border-white/5 flex flex-col items-center gap-4 hover:bg-white/5 transition-all group shadow-xl">
+                  <i className="fas fa-play text-4xl text-blue-500 group-hover:scale-110 transition-transform"></i>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white">BOOMPLAY</span>
               </div>
-              <div className="glass-card p-8 rounded-3xl border border-white/5 flex flex-col items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-crosshair">
-                  <i className="fab fa-spotify text-3xl text-[#1DB954]"></i>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">SPOTIFY</span>
+              <div className="glass-card p-10 rounded-3xl border border-white/5 flex flex-col items-center gap-4 hover:bg-white/5 transition-all group shadow-xl">
+                  <i className="fas fa-wave-square text-4xl text-orange-500 group-hover:scale-110 transition-transform"></i>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white">AUDIOMACK</span>
               </div>
-              <div className="glass-card p-8 rounded-3xl border border-white/5 flex flex-col items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-crosshair">
-                  <i className="fab fa-apple text-3xl text-white"></i>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">APPLE MUSIC</span>
+              <div className="glass-card p-10 rounded-3xl border border-white/5 flex flex-col items-center gap-4 hover:bg-white/5 transition-all group shadow-xl">
+                  <i className="fab fa-apple text-4xl text-red-500 group-hover:scale-110 transition-transform"></i>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-500 group-hover:text-white">APPLE MUSIC</span>
               </div>
            </div>
         </section>
 
-        {/* Core Value Pillars - Restored */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
-           <div className="glass-card p-10 rounded-[3rem] border border-white/5 space-y-4">
-              <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500 text-xl">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
+           <div className="glass-card p-12 rounded-[3rem] border border-white/5 space-y-6">
+              <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500 text-2xl">
                  <i className="fas fa-chart-line"></i>
               </div>
-              <h3 className="text-lg font-black uppercase italic tracking-tighter">Real-Time Yields</h3>
-              <p className="text-xs text-gray-500 font-medium leading-relaxed uppercase">Our algorithm tracks your session duration down to the millisecond, converting high-fidelity streams into stablecoin-backed USD balances instantly.</p>
+              <h3 className="text-xl font-black uppercase italic tracking-tighter">Real-Time Yields</h3>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed uppercase tracking-tight">Our algorithm tracks your session duration down to the millisecond, converting high-fidelity streams into stablecoin-backed USD balances instantly.</p>
            </div>
-           <div className="glass-card p-10 rounded-[3rem] border border-white/5 space-y-4">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 text-xl">
+           <div className="glass-card p-12 rounded-[3rem] border border-white/5 space-y-6">
+              <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 text-2xl">
                  <i className="fas fa-shield-alt"></i>
               </div>
-              <h3 className="text-lg font-black uppercase italic tracking-tighter">Vault Encryption</h3>
-              <p className="text-xs text-gray-500 font-medium leading-relaxed uppercase">Earnings are secured in an AES-256 bit encrypted cold-wallet until withdrawal. We employ institutional-grade escrow for every listener in our network.</p>
+              <h3 className="text-xl font-black uppercase italic tracking-tighter">Vault Encryption</h3>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed uppercase tracking-tight">Earnings are secured in an AES-256 bit encrypted cold-wallet until withdrawal. We employ institutional-grade escrow for every listener in our network.</p>
            </div>
-           <div className="glass-card p-10 rounded-[3rem] border border-white/5 space-y-4">
-              <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 text-xl">
+           <div className="glass-card p-12 rounded-[3rem] border border-white/5 space-y-6">
+              <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 text-2xl">
                  <i className="fas fa-globe-africa"></i>
               </div>
-              <h3 className="text-lg font-black uppercase italic tracking-tighter">Local Settlement</h3>
-              <p className="text-xs text-gray-500 font-medium leading-relaxed uppercase">Seamlessly convert USD to NGN at market-leading rates. Direct payouts to over 20+ Nigerian commercial banks via our Paystack gateway.</p>
+              <h3 className="text-xl font-black uppercase italic tracking-tighter">Local Settlement</h3>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed uppercase tracking-tight">Seamlessly convert USD to NGN at market-leading rates. Direct payouts to over 20+ Nigerian commercial banks via our secure gateway.</p>
            </div>
         </section>
 
-        {/* Liquidity Logic - Restored */}
-        <section className="space-y-12 mb-24">
-           <div className="bg-white/5 border border-white/5 p-12 rounded-[4rem]">
-              <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-6">The Liquidity Logic</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                 <div className="space-y-4">
-                    <p className="text-sm text-gray-400 font-medium leading-relaxed">
-                       BeatBucks Global functions as a distributed audience network. Emerging and established artists allocate distribution budgets to boost their streaming metrics on global platforms. Instead of these funds going solely to platform ad-buys, we distribute 70% of this capital directly to active listeners who verify their attention.
-                    </p>
-                    <p className="text-sm text-gray-400 font-medium leading-relaxed">
-                       This creates a sustainable ecosystem where artists gain organic algorithmic momentum, and listeners receive professional compensation for their time.
-                    </p>
-                 </div>
-                 <div className="bg-black/50 p-8 rounded-[2rem] border border-white/5 flex flex-col justify-center space-y-4">
-                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                       <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Protocol Type</span>
-                       <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">PoL (Proof-of-Listening)</span>
-                    </div>
-                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                       <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Payment Infrastructure</span>
-                       <span className="text-[10px] font-black text-white uppercase tracking-widest">Paystack Integrated</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                       <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Compliance Level</span>
-                       <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Verified Digital Payouts</span>
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="text-center mb-24 py-16 bg-gradient-to-b from-green-500/5 to-transparent rounded-[5rem] border border-white/5">
-           <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-4">Ready to Synchronize?</h2>
-           <p className="text-gray-500 text-xs font-black uppercase tracking-[0.3em] mb-8">Join 500,000+ Verified Network Partners Today.</p>
+        <section className="text-center mb-32 py-20 bg-gradient-to-b from-green-500/5 to-transparent rounded-[5rem] border border-white/5 shadow-inner">
+           <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-6">Ready to Synchronize?</h2>
+           <p className="text-gray-500 text-sm font-black uppercase tracking-[0.4em] mb-12">Join 500,000+ Verified Network Partners Today.</p>
            <button 
              onClick={() => setView('signup')}
-             className="px-12 py-6 bg-white text-black font-black rounded-3xl shadow-2xl uppercase tracking-[0.3em] hover:bg-green-500 transition-all active:scale-95"
+             className="px-16 py-7 bg-white text-black font-black rounded-3xl shadow-2xl uppercase tracking-[0.3em] hover:bg-green-500 transition-all active:scale-95 text-lg"
            >
              Open Digital Wallet
            </button>
         </section>
       </main>
 
-      {/* Corporate Footer - Restored */}
-      <footer className="w-full bg-black border-t border-white/5 pt-16 pb-12 px-8 relative z-10 text-center md:text-left">
-         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
-            <div className="col-span-2 md:col-span-1 space-y-6">
-               <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <div className="w-6 h-6 bg-[#00ffff] rounded flex items-center justify-center">
-                    <CustomBLogo color="black" size="10px" />
+      <footer className="w-full bg-black border-t border-white/5 pt-20 pb-12 px-10 relative z-10 text-center md:text-left">
+         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-16 mb-20">
+            <div className="col-span-2 md:col-span-1 space-y-8">
+               <div className="flex items-center gap-3 justify-center md:justify-start">
+                  <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center">
+                    <i className="fas fa-headphones text-black text-[10px]"></i>
                   </div>
-                  <span className="font-black italic tracking-tighter text-xs uppercase">BeatBucks</span>
+                  <span className="font-black italic tracking-tighter text-sm uppercase">BeatBucks</span>
                </div>
-               <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-loose">
+               <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest leading-loose">
                   Redefining the relationship between artists and listeners through distributed audio capital.
                </p>
             </div>
-            <div className="space-y-4">
-               <h5 className="text-[10px] font-black text-white uppercase tracking-widest">Ecosystem</h5>
-               <ul className="text-[9px] text-gray-600 font-black uppercase space-y-2">
-                  <li className="hover:text-green-500 cursor-pointer">Listen & Earn Portal</li>
-                  <li className="hover:text-green-500 cursor-pointer">Protocol Whitepaper</li>
-                  <li className="hover:text-green-500 cursor-pointer">Artist Dashboard</li>
-               </ul>
-            </div>
-            <div className="space-y-4">
-               <h5 className="text-[10px] font-black text-white uppercase tracking-widest">Resources</h5>
-               <ul className="text-[9px] text-gray-600 font-black uppercase space-y-2">
-                  <li className="hover:text-green-500 cursor-pointer">Corporate Careers</li>
-                  <li className="hover:text-green-500 cursor-pointer">Compliance Policy</li>
-                  <li className="hover:text-green-500 cursor-pointer">Help Center</li>
-               </ul>
-            </div>
-            <div className="space-y-4">
-               <h5 className="text-[10px] font-black text-white uppercase tracking-widest">Connect</h5>
-               <div className="flex gap-4 justify-center md:justify-start">
-                  <i className="fab fa-twitter text-gray-500 hover:text-white cursor-pointer transition-colors"></i>
-                  <i className="fab fa-telegram text-gray-500 hover:text-white cursor-pointer transition-colors"></i>
-               </div>
-               <p className="text-[8px] text-gray-700 font-black uppercase leading-tight">
-                  support@beatbucks.global <br />
-                  Lagos HQ | Virtual Office
-               </p>
-            </div>
          </div>
-         <div className="text-center pt-8 border-t border-white/5">
-            <p className="text-[8px] text-gray-800 font-black uppercase tracking-[0.5em]">
-               &copy; 2024 BEATBUCKS GLOBAL ACTIVATIONS LTD | ALL RIGHTS RESERVED
-            </p>
+         <div className="max-w-6xl mx-auto border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-gray-700">© 2024 BeatBucks Global. Licensed Audio Monetization Bridge.</p>
          </div>
       </footer>
     </div>

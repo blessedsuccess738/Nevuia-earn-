@@ -55,6 +55,7 @@ export interface User {
   referralsCount: number;
   referralEarningsUSD: number;
   notifications: Notification[];
+  createdAt: string; // Track account creation date
 }
 
 export interface Transaction {
@@ -81,6 +82,7 @@ export interface Message {
 export interface AppSettings {
   usdToNgnRate: number;
   minWithdrawalNGN: number;
+  minWithdrawalUSD: number; // Added USD minimum
   dailyCapUSD: number;
   referralBonusUSD: number;
   dailyRewardUSD: number;

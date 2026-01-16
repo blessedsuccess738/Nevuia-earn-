@@ -5,7 +5,8 @@ export const ADMIN_EMAIL = 'blessedsuccess738@gmail.com';
 
 export const INITIAL_SETTINGS: AppSettings = {
   usdToNgnRate: 1550, 
-  minWithdrawalNGN: 10000,
+  minWithdrawalNGN: 23250, 
+  minWithdrawalUSD: 15.00, 
   dailyCapUSD: 10.00,
   referralBonusUSD: 1.00,
   dailyRewardUSD: 0.25,
@@ -17,9 +18,14 @@ export const INITIAL_SETTINGS: AppSettings = {
   paystackPublicKey: 'pk_test_placeholder_please_replace',
   nubapiKey: '4uSyi6KbtzZZZwBpE8Lkh31A3Il0k2sQ6kKv4uND962e0daf', 
   maintenanceMode: false,
-  announcementSubject: 'PREMIUM ASSET: RANSOM (REMIX) ADDED',
-  announcementContent: 'ATTENTION: We have just secured the high-yield license for Lil Tecca ft. Juice WRLD - Ransom (Remix). This track features a premium yield of $0.85 per stream. Start listening now to maximize your daily liquidity!'
+  announcementSubject: 'PROTOCOL UPGRADE: $15 MIN WITHDRAWAL',
+  announcementContent: 'Welcome to the upgraded BeatBucks ecosystem. Minimum withdrawal is now strictly $15.00. Free trial users have a 3-day window to activate their earnings. Listen to verified streams to earn daily rewards!'
 };
+
+// High-fidelity PNG URLs for background floating images
+export const BOOMPLAY_PNG = 'https://i.ibb.co/3N3t74Y/boomplay.png'; // Cyan B
+export const AUDIOMACK_PNG = 'https://i.ibb.co/YyYfJ9v/audiomack.png'; // Orange Wave
+export const SPOTIFY_PNG = 'https://i.ibb.co/V9z0m8k/spotify.png'; // Green Spotify
 
 export const INITIAL_TRACKS: MusicTrack[] = [
   { 
@@ -52,7 +58,7 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=300&q=80',
     duration: 50,
     earningUSD: 0.18,
-    category: 'Trending',
+    category: 'Daily Picks',
     enabled: true
   },
   { 
@@ -67,127 +73,6 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     enabled: true
   },
   { 
-    id: '5', 
-    title: 'Oceanic Echo', 
-    artist: 'Deep Blue', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=300&q=80',
-    duration: 40,
-    earningUSD: 0.12,
-    category: 'Daily Picks',
-    enabled: true
-  },
-  { 
-    id: '6', 
-    title: 'Urban Skyline', 
-    artist: 'Metro Pulse', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&w=300&q=80',
-    duration: 65,
-    earningUSD: 0.25,
-    category: 'New Releases',
-    enabled: true
-  },
-  { 
-    id: '7', 
-    title: 'Sunset Dreams', 
-    artist: 'Golden Hour', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=300&q=80',
-    duration: 48,
-    earningUSD: 0.17,
-    category: 'Recommended',
-    enabled: true
-  },
-  { 
-    id: '8', 
-    title: 'Lunar Glow', 
-    artist: 'Space Dust', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80',
-    duration: 70,
-    earningUSD: 0.30,
-    category: 'Trending',
-    enabled: true
-  },
-  { 
-    id: '9', 
-    title: 'I\'m Not Sure', 
-    artist: 'Juice WRLD', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1496293455970-f8581aae0e3c?auto=format&fit=crop&w=300&q=80',
-    duration: 180,
-    earningUSD: 0.75,
-    category: 'Trending',
-    enabled: true
-  },
-  { 
-    id: '10', 
-    title: 'Insecure Flow', 
-    artist: '999 Legacy', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1453090927415-5f45085b65c0?auto=format&fit=crop&w=300&q=80',
-    duration: 165,
-    earningUSD: 0.48,
-    category: 'New Releases',
-    enabled: true
-  },
-  { 
-    id: '11', 
-    title: 'Midnight Vibe', 
-    artist: 'Lofi King', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=300&q=80',
-    duration: 120,
-    earningUSD: 0.35,
-    category: 'Trending',
-    enabled: true
-  },
-  { 
-    id: '12', 
-    title: 'Starlight Melodies', 
-    artist: 'Celestial', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=300&q=80',
-    duration: 140,
-    earningUSD: 0.42,
-    category: 'Recommended',
-    enabled: true
-  },
-  { 
-    id: '13', 
-    title: 'Future Pulse', 
-    artist: 'Aura', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1484876063972-9d81f50ad827?auto=format&fit=crop&w=300&q=80',
-    duration: 195,
-    earningUSD: 0.60,
-    category: 'New Releases',
-    enabled: true
-  },
-  { 
-    id: '14', 
-    title: 'Deep Water', 
-    artist: 'Oceanic', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=300&q=80',
-    duration: 215,
-    earningUSD: 0.65,
-    category: 'Daily Picks',
-    enabled: true
-  },
-  { 
-    id: '15', 
-    title: 'Lucid Echoes', 
-    artist: '999 Collective', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1514525253344-f814d0743b17?auto=format&fit=crop&w=300&q=80',
-    duration: 190,
-    earningUSD: 0.70,
-    category: 'Recommended',
-    enabled: true
-  },
-  { 
     id: '16', 
     title: 'Cigarettes', 
     artist: 'Juice WRLD', 
@@ -195,17 +80,6 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=300&q=80',
     duration: 220,
     earningUSD: 0.80,
-    category: 'Trending',
-    enabled: true
-  },
-  { 
-    id: '17', 
-    title: 'Ransom (Remix)', 
-    artist: 'Lil Tecca ft. Juice WRLD', 
-    url: 'https://s51.aconvert.com/convert/p3r68-cdx67/zz91d-y33tp.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=400&q=80',
-    duration: 180,
-    earningUSD: 0.85,
     category: 'Trending',
     enabled: true
   }

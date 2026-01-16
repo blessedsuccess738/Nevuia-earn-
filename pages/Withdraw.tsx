@@ -25,7 +25,9 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
   const plan = PLAN_DETAILS[user.plan];
   const isActivated = user.status === AccountStatus.ACTIVATED;
   const isIndividualOpen = user.withdrawalEnabled !== false;
-  const withdrawAmountNGN = parseFloat(withdrawAmountUSD) * settings.usdToNgnRate || 0;
+  
+  // Enforce $15 minimum
+  const MIN_USD = settings.minWithdrawalUSD || 15.00;
 
   useEffect(() => {
     const verifyAccount = async () => {
@@ -34,7 +36,7 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
         setIsVerified(false);
         setAccountName('');
         
-        const apiKey = settings.nubapiKey || process.env.API_KEY;
+        const apiKey = settings.nubapiKey || '';
 
         try {
           const response = await fetch(`https://nubapi.com/api/verify?account_number=${accountNumber}&bank_code=${bankCode}`, {
@@ -80,8 +82,8 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
       return;
     }
 
-    if (amountUSD * settings.usdToNgnRate < settings.minWithdrawalNGN) {
-      setMsg({ type: 'error', text: `Minimum withdrawal is ₦${settings.minWithdrawalNGN.toLocaleString()}.` });
+    if (amountUSD < MIN_USD) {
+      setMsg({ type: 'error', text: `Minimum withdrawal is $${MIN_USD.toFixed(2)}.` });
       return;
     }
 
@@ -162,8 +164,8 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
               <p className="text-green-500 text-xs font-bold">₦{(user.balanceUSD * settings.usdToNgnRate).toLocaleString()}</p>
             </div>
             <div className="p-6 bg-white/5 rounded-3xl border border-white/10">
-              <p className="text-[10px] text-gray-500 font-black mb-1 uppercase tracking-widest">Rate</p>
-              <p className="text-xl font-black text-white">₦{settings.usdToNgnRate.toLocaleString()}/$</p>
+              <p className="text-[10px] text-gray-500 font-black mb-1 uppercase tracking-widest">Min Limit</p>
+              <p className="text-xl font-black text-white">${MIN_USD.toFixed(2)}</p>
             </div>
           </div>
 
@@ -172,6 +174,7 @@ const Withdraw: React.FC<WithdrawProps> = ({ user, settings, onTransaction, setS
             <input 
               type="number" 
               required
+              step="0.01"
               value={withdrawAmountUSD}
               onChange={(e) => setWithdrawAmountUSD(e.target.value)}
               className="w-full bg-black/50 border border-white/10 rounded-[2rem] px-8 py-6 focus:outline-none focus:border-green-500 text-white text-2xl font-black transition-all" 
