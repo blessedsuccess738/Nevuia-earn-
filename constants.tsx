@@ -19,13 +19,13 @@ export const INITIAL_SETTINGS: AppSettings = {
   nubapiKey: '4uSyi6KbtzZZZwBpE8Lkh31A3Il0k2sQ6kKv4uND962e0daf', 
   maintenanceMode: false,
   announcementSubject: 'PROTOCOL UPGRADE: $15 MIN WITHDRAWAL',
-  announcementContent: 'Welcome to the upgraded BeatBucks ecosystem. Minimum withdrawal is now strictly $15.00. Free trial users have a 3-day window to activate their earnings. Listen to verified streams to earn daily rewards!'
+  announcementContent: 'Welcome to the upgraded BeatBucks ecosystem. Minimum withdrawal is now strictly $15.00.',
+  videoBackgroundUrl: 'https://cdn.pixabay.com/video/2021/04/12/70874-537467776_large.mp4' // Smooth tech background
 };
 
-// High-fidelity PNG URLs for background floating images
-export const BOOMPLAY_PNG = 'https://i.ibb.co/3N3t74Y/boomplay.png'; // Cyan B
-export const AUDIOMACK_PNG = 'https://i.ibb.co/YyYfJ9v/audiomack.png'; // Orange Wave
-export const SPOTIFY_PNG = 'https://i.ibb.co/V9z0m8k/spotify.png'; // Green Spotify
+export const BOOMPLAY_PNG = 'https://i.ibb.co/3N3t74Y/boomplay.png';
+export const AUDIOMACK_PNG = 'https://i.ibb.co/YyYfJ9v/audiomack.png';
+export const SPOTIFY_PNG = 'https://i.ibb.co/V9z0m8k/spotify.png';
 
 export const INITIAL_TRACKS: MusicTrack[] = [
   { 
@@ -36,7 +36,7 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=300&q=80',
     duration: 45,
     earningUSD: 0.15,
-    category: 'Trending',
+    category: 'Spotify',
     enabled: true
   },
   { 
@@ -47,7 +47,7 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=300&q=80',
     duration: 60,
     earningUSD: 0.20,
-    category: 'New Releases',
+    category: 'Apple Music',
     enabled: true
   },
   { 
@@ -58,29 +58,7 @@ export const INITIAL_TRACKS: MusicTrack[] = [
     albumArt: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=300&q=80',
     duration: 50,
     earningUSD: 0.18,
-    category: 'Daily Picks',
-    enabled: true
-  },
-  { 
-    id: '4', 
-    title: 'Desert Mirage', 
-    artist: 'Nomad Beats', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1514525253344-f814d0743b17?auto=format&fit=crop&w=300&q=80',
-    duration: 55,
-    earningUSD: 0.22,
-    category: 'Recommended',
-    enabled: true
-  },
-  { 
-    id: '16', 
-    title: 'Cigarettes', 
-    artist: 'Juice WRLD', 
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3', 
-    albumArt: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?auto=format&fit=crop&w=300&q=80',
-    duration: 220,
-    earningUSD: 0.80,
-    category: 'Trending',
+    category: 'Boomplay',
     enabled: true
   }
 ];
@@ -88,52 +66,19 @@ export const INITIAL_TRACKS: MusicTrack[] = [
 export const NIGERIAN_BANKS = [
   { name: "Access Bank", code: "000014" },
   { name: "EcoBank", code: "000010" },
-  { name: "Fidelity Bank", code: "000007" },
   { name: "First Bank", code: "000016" },
-  { name: "First City Monument Bank", code: "000003" },
   { name: "GTBank", code: "000013" },
-  { name: "Heritage Bank", code: "000020" },
-  { name: "Keystone Bank", code: "000002" },
   { name: "Kuda MFB", code: "090267" },
-  { name: "Moniepoint MFB", code: "090405" },
   { name: "Opay", code: "100004" },
   { name: "Palmpay", code: "100033" },
-  { name: "Polaris Bank", code: "000008" },
-  { name: "Providus Bank", code: "000023" },
-  { name: "Stanbic IBTC", code: "000012" },
-  { name: "Sterling Bank", code: "000001" },
-  { name: "Union Bank", code: "000018" },
-  { name: "United Bank For Africa", code: "000004" },
-  { name: "Unity Bank", code: "000011" },
-  { name: "Wema Bank", code: "000017" },
   { name: "Zenith Bank", code: "000015" }
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export const PLAN_DETAILS = {
-  [PlanTier.FREE]: {
-    name: 'Free',
-    priceUSD: 0,
-    songLimit: 2,
-    canWithdraw: false
-  },
-  [PlanTier.BASIC]: {
-    name: 'Basic',
-    priceUSD: 4,
-    songLimit: 5,
-    canWithdraw: true
-  },
-  [PlanTier.STANDARD]: {
-    name: 'Standard',
-    priceUSD: 7,
-    songLimit: 8,
-    canWithdraw: true
-  },
-  [PlanTier.PREMIUM]: {
-    name: 'Premium',
-    priceUSD: 12,
-    songLimit: Infinity,
-    canWithdraw: true
-  }
+  [PlanTier.FREE]: { name: 'Free', priceUSD: 0, songLimit: 2, canWithdraw: false },
+  [PlanTier.BASIC]: { name: 'Basic', priceUSD: 4, songLimit: 5, canWithdraw: true },
+  [PlanTier.STANDARD]: { name: 'Standard', priceUSD: 7, songLimit: 8, canWithdraw: true },
+  [PlanTier.PREMIUM]: { name: 'Premium', priceUSD: 12, songLimit: Infinity, canWithdraw: true }
 };
 
-export const SONG_CATEGORIES = ['Trending', 'New Releases', 'Recommended', 'Daily Picks'];
+export const SONG_CATEGORIES = ['Spotify', 'Boomplay', 'Audiomack', 'Apple Music'];

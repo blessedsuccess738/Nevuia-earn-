@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, AppSettings, Transaction, AccountStatus, PlanTier, TransactionStatus } from '../types';
 import { PLAN_DETAILS } from '../constants';
 
@@ -13,7 +14,7 @@ interface ActivationProps {
 declare const PaystackPop: any;
 
 const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, setState }) => {
-  const [selectedPlan, setSelectedPlan] = useState<PlanTier | null>(null);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handlePayWithPaystack = (tier: PlanTier) => {
@@ -22,22 +23,11 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
     const ngnAmount = planInfo.priceUSD * settings.usdToNgnRate;
 
     const handler = PaystackPop.setup({
-      key: settings.paystackPublicKey, // Use your configured public key
+      key: settings.paystackPublicKey, 
       email: user.email,
-      amount: ngnAmount * 100, // Amount in kobo
+      amount: ngnAmount * 100, 
       currency: "NGN",
-      metadata: {
-        custom_fields: [
-          {
-            display_name: "Plan Name",
-            variable_name: "plan_name",
-            value: planInfo.name
-          }
-        ]
-      },
       callback: (response: any) => {
-        // Response contains reference, status, message
-        console.log("Payment Successful", response);
         confirmPayment(tier);
       },
       onClose: () => {
@@ -72,15 +62,27 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
     }));
     
     setLoading(false);
-    alert('Payment Successful! Your account is now being reviewed. Check back in 5-15 mins for activation.');
+    alert('Activation Request Sent! Your account will be upgraded shortly.');
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-12">
+    <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-12 pb-32">
+      <div className="flex items-center justify-between">
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white border border-white/10 hover:bg-white/10 active:scale-90 transition-all"
+        >
+          <i className="fas fa-chevron-left"></i>
+        </button>
+        <div className="text-right">
+           <h1 className="text-2xl font-black italic uppercase tracking-tighter text-white">Boost Rank</h1>
+        </div>
+      </div>
+
       <div className="text-center space-y-4">
-        <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">Professional Activation</h1>
-        <p className="text-gray-500 text-sm max-w-xl mx-auto font-bold uppercase tracking-widest">
-          Boost daily limits and unlock payouts. Secure bank transfers powered by Paystack.
+        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">Institutional Tiers</h2>
+        <p className="text-gray-500 text-xs max-w-sm mx-auto font-black uppercase tracking-[0.3em] leading-relaxed">
+          Upgrade your node status to unlock high-yield audio assets and local settlements.
         </p>
       </div>
 
@@ -94,68 +96,55 @@ const Activation: React.FC<ActivationProps> = ({ user, settings, onTransaction, 
           return (
             <div 
               key={tier}
-              className={`glass-card p-6 rounded-[2.5rem] border-2 flex flex-col transition-all ${
-                isCurrent ? 'border-green-500 ring-4 ring-green-500/10' : 'border-white/5'
+              className={`glass-card p-8 rounded-[3rem] border-2 flex flex-col transition-all ${
+                isCurrent ? 'border-green-500 ring-4 ring-green-500/10' : 'border-white/5 shadow-2xl'
               }`}
             >
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-8">
                 <div>
                   <h3 className="text-2xl font-black uppercase italic tracking-tighter">{plan.name}</h3>
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none">Status: {isCurrent ? 'Current' : 'Tier'}</p>
+                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{isCurrent ? 'Current' : 'Status'}</p>
                 </div>
+                {isCurrent && <i className="fas fa-check-circle text-green-500 text-xl"></i>}
               </div>
 
-              <div className="mb-8">
+              <div className="mb-10">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-white">${plan.priceUSD}</span>
+                  <span className="text-4xl font-black text-white">${plan.priceUSD}</span>
                 </div>
-                <p className="text-green-500 font-black text-xs uppercase tracking-tighter italic">≈ ₦{ngnPrice.toLocaleString()}</p>
+                <p className="text-green-500 font-black text-[10px] uppercase tracking-tighter italic">≈ ₦{ngnPrice.toLocaleString()}</p>
               </div>
 
-              <div className="space-y-4 flex-grow">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
-                    <i className="fas fa-headphones text-[10px]"></i>
+              <div className="space-y-6 flex-grow">
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
+                    <i className="fas fa-music text-[10px]"></i>
                   </div>
-                  <div>
-                    <p className="text-white text-[11px] font-black uppercase">{plan.songLimit === Infinity ? 'Unlimited' : `${plan.songLimit} Daily Songs`}</p>
-                  </div>
+                  <p className="text-white text-[11px] font-black uppercase tracking-tighter">{plan.songLimit === Infinity ? 'Infinite Songs' : `${plan.songLimit} Assets Daily`}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                    <i className="fas fa-bolt text-[10px]"></i>
+                <div className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <i className="fas fa-wallet text-[10px]"></i>
                   </div>
-                  <div>
-                    <p className="text-white text-[11px] font-black uppercase">{plan.canWithdraw ? 'Full Withdrawals' : 'Earn Only'}</p>
-                  </div>
+                  <p className="text-white text-[11px] font-black uppercase tracking-tighter">{plan.canWithdraw ? 'Full Settlements' : 'Accumulation Only'}</p>
                 </div>
               </div>
 
               <button
                 disabled={isCurrent || isFree || user.status === AccountStatus.PENDING_ACTIVATION || loading}
                 onClick={() => handlePayWithPaystack(tier)}
-                className={`w-full mt-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
-                  isCurrent ? 'bg-green-500/20 text-green-500' :
-                  isFree ? 'bg-white/5 text-gray-500' :
-                  user.status === AccountStatus.PENDING_ACTIVATION ? 'bg-yellow-500/20 text-yellow-500' :
-                  'bg-white text-black hover:bg-green-500 active:scale-95 shadow-xl'
+                className={`w-full mt-12 py-5 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-2xl ${
+                  isCurrent ? 'bg-green-500/20 text-green-500 cursor-default' :
+                  isFree ? 'bg-white/5 text-gray-500 cursor-default' :
+                  user.status === AccountStatus.PENDING_ACTIVATION ? 'bg-yellow-500/10 text-yellow-500' :
+                  'bg-white text-black hover:bg-green-500 active:scale-95'
                 }`}
               >
-                {loading ? 'Processing...' : isCurrent ? 'Active Plan' : isFree ? 'Default' : user.status === AccountStatus.PENDING_ACTIVATION ? 'Pending review' : `Boost Plan Now`}
+                {loading ? 'Initializing...' : isCurrent ? 'Active Node' : isFree ? 'Default' : user.status === AccountStatus.PENDING_ACTIVATION ? 'Reviewing' : `Initialize Boost`}
               </button>
             </div>
           );
         })}
-      </div>
-
-      <div className="glass-card p-10 rounded-[3rem] border border-white/5 text-center max-w-3xl mx-auto space-y-4">
-        <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto text-blue-500 text-xl">
-           <i className="fas fa-shield-alt"></i>
-        </div>
-        <h3 className="text-xl font-black uppercase tracking-tighter italic">Secure Online Checkout</h3>
-        <p className="text-gray-500 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
-          Payments are handled via Paystack encrypted gateways. We never store your card details. Once payment is confirmed, your account status is automatically forwarded to our activation queue.
-        </p>
       </div>
     </div>
   );

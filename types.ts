@@ -55,7 +55,7 @@ export interface User {
   referralsCount: number;
   referralEarningsUSD: number;
   notifications: Notification[];
-  createdAt: string; // Track account creation date
+  createdAt: string;
 }
 
 export interface Transaction {
@@ -79,10 +79,19 @@ export interface Message {
   isAdmin: boolean; 
 }
 
+export interface PublicChatMessage {
+  id: string;
+  userId: string;
+  username: string;
+  text: string;
+  timestamp: string;
+  tier: PlanTier;
+}
+
 export interface AppSettings {
   usdToNgnRate: number;
   minWithdrawalNGN: number;
-  minWithdrawalUSD: number; // Added USD minimum
+  minWithdrawalUSD: number;
   dailyCapUSD: number;
   referralBonusUSD: number;
   dailyRewardUSD: number;
@@ -96,6 +105,7 @@ export interface AppSettings {
   maintenanceMode: boolean;
   announcementSubject: string;
   announcementContent: string;
+  videoBackgroundUrl: string; // New field
 }
 
 export interface MusicTrack {
@@ -117,5 +127,6 @@ export interface AppState {
   settings: AppSettings;
   tracks: MusicTrack[];
   messages: Message[];
+  publicChat: PublicChatMessage[]; // New field
   adminNotifications: AdminNotification[];
 }

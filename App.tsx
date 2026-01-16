@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Welcome from './pages/Welcome';
 import Dashboard from './pages/Dashboard';
@@ -8,39 +8,25 @@ import Withdraw from './pages/Withdraw';
 import AdminPanel from './pages/AdminPanel';
 import Activation from './pages/Activation';
 import Navbar from './components/Navbar';
-import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, TransactionStatus, Message, Notification, AdminNotification } from './types';
+import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, TransactionStatus, Message, Notification, AdminNotification, PublicChatMessage } from './types';
 import { stateStore } from './store';
 import { ADMIN_EMAIL } from './constants';
 
 const App: React.FC = () => {
   const [state, setState] = useState(stateStore.get());
+  const [showNewTrackNotify, setShowNewTrackNotify] = useState(false);
+  const trackCountRef = useRef(state.tracks.length);
 
   useEffect(() => {
     stateStore.save(state);
-  }, [state]);
-
-  useEffect(() => {
-    if (state.currentUser) {
-      const lastReset = state.currentUser.lastDailyReset;
-      const today = new Date().toDateString();
-      
-      if (lastReset !== today) {
-        const updatedUser = {
-          ...state.currentUser,
-          dailyEarnings: 0,
-          songsListenedToday: 0,
-          playedTracksToday: [],
-          lastDailyReset: today
-        };
-        
-        setState(prev => ({
-          ...prev,
-          currentUser: updatedUser,
-          users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u)
-        }));
-      }
+    
+    // Check for new tracks to show notification
+    if (state.tracks.length > trackCountRef.current) {
+      setShowNewTrackNotify(true);
+      setTimeout(() => setShowNewTrackNotify(false), 5000);
     }
-  }, [state.currentUser?.id]);
+    trackCountRef.current = state.tracks.length;
+  }, [state]);
 
   const login = (email: string) => {
     const user = state.users.find(u => u.email === email);
@@ -72,7 +58,7 @@ const App: React.FC = () => {
       referralsCount: 0,
       referralEarningsUSD: 0,
       notifications: [],
-      createdAt: new Date().toISOString() // Set creation date
+      createdAt: new Date().toISOString()
     };
 
     let updatedUsers = [...state.users, newUser];
@@ -88,97 +74,43 @@ const App: React.FC = () => {
           referralsCount: referrer.referralsCount + 1,
           referralEarningsUSD: referrer.referralEarningsUSD + referralBonus
         };
-        
         updatedUsers = updatedUsers.map(u => u.id === referrer.id ? updatedReferrer : u);
-        
-        const referralTxn: Transaction = {
-          id: Math.random().toString(36).substr(2, 9),
-          userId: referrer.id,
-          amountUSD: referralBonus,
-          type: 'REFERRAL',
-          status: TransactionStatus.APPROVED,
-          timestamp: new Date().toISOString(),
-          details: `Referral Bonus for @${username}`
-        };
-        
-        setState(prev => ({
-          ...prev,
-          users: updatedUsers,
-          currentUser: newUser,
-          transactions: [referralTxn, ...prev.transactions]
-        }));
-        return;
       }
     }
 
-    setState(prev => ({
-      ...prev,
-      users: updatedUsers,
-      currentUser: newUser
-    }));
+    setState(prev => ({ ...prev, users: updatedUsers, currentUser: newUser }));
   };
 
-  const logout = () => {
-    setState(prev => ({ ...prev, currentUser: null }));
-  };
+  const logout = () => setState(prev => ({ ...prev, currentUser: null }));
 
   const sendMessage = (text: string, isAdmin: boolean = false, targetUserId?: string) => {
     const userId = isAdmin ? (targetUserId || '') : (state.currentUser?.id || '');
-    const username = isAdmin ? 'Support Admin' : (state.currentUser?.username || 'User');
-    
     if (!userId) return;
 
     const msg: Message = {
       id: Math.random().toString(36).substr(2, 9),
-      userId: userId,
-      username: username,
+      userId,
+      username: isAdmin ? 'Admin' : state.currentUser!.username,
       text,
       timestamp: new Date().toISOString(),
       read: false,
-      isAdmin: isAdmin
+      isAdmin
     };
 
-    const newState: any = {
-      ...state,
-      messages: [...state.messages, msg]
-    };
-
-    if (!isAdmin) {
-      const adminNotif: AdminNotification = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: 'New Support Message',
-        message: `User @${state.currentUser?.username} sent a new message.`,
-        timestamp: new Date().toISOString(),
-        read: false,
-        type: 'NEW_MESSAGE'
-      };
-      newState.adminNotifications = [adminNotif, ...state.adminNotifications];
-    } else {
-      // Notify user of admin reply
-      const userNotif: Notification = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: 'New Support Reply',
-        message: 'An administrator has replied to your support ticket.',
-        timestamp: new Date().toISOString(),
-        read: false
-      };
-      newState.users = state.users.map(u => u.id === userId ? { ...u, notifications: [userNotif, ...u.notifications] } : u);
-      if (state.currentUser?.id === userId) {
-        newState.currentUser = { ...state.currentUser, notifications: [userNotif, ...state.currentUser.notifications] };
-      }
-    }
-
-    setState(newState);
+    setState(prev => ({ ...prev, messages: [...prev.messages, msg] }));
   };
 
-  const clearNotifications = () => {
+  const sendPublicChatMessage = (text: string) => {
     if (!state.currentUser) return;
-    const updatedUser = { ...state.currentUser, notifications: [] };
-    setState(prev => ({
-      ...prev,
-      currentUser: updatedUser,
-      users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u)
-    }));
+    const msg: PublicChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId: state.currentUser.id,
+      username: state.currentUser.username,
+      text,
+      timestamp: new Date().toISOString(),
+      tier: state.currentUser.plan
+    };
+    setState(prev => ({ ...prev, publicChat: [...(prev.publicChat || []), msg].slice(-50) }));
   };
 
   const claimDailyReward = useCallback(() => {
@@ -187,27 +119,12 @@ const App: React.FC = () => {
     if (state.currentUser.lastDailyRewardClaimed === today) return;
 
     const reward = state.settings.dailyRewardUSD;
-    const updatedUser = {
-      ...state.currentUser,
-      balanceUSD: state.currentUser.balanceUSD + reward,
-      lastDailyRewardClaimed: today
-    };
-
-    const rewardTxn: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId: state.currentUser.id,
-      amountUSD: reward,
-      type: 'DAILY_REWARD',
-      status: TransactionStatus.APPROVED,
-      timestamp: new Date().toISOString(),
-      details: 'Daily Log-in Reward'
-    };
-
+    const updatedUser = { ...state.currentUser, balanceUSD: state.currentUser.balanceUSD + reward, lastDailyRewardClaimed: today };
     setState(prev => ({
       ...prev,
       currentUser: updatedUser,
       users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u),
-      transactions: [rewardTxn, ...prev.transactions]
+      transactions: [{ id: Math.random().toString(36).substr(2, 9), userId: state.currentUser!.id, amountUSD: reward, type: 'DAILY_REWARD', status: TransactionStatus.APPROVED, timestamp: new Date().toISOString() }, ...prev.transactions]
     }));
   }, [state.currentUser, state.settings.dailyRewardUSD]);
 
@@ -221,53 +138,12 @@ const App: React.FC = () => {
       songsListenedToday: state.currentUser.songsListenedToday + 1,
       playedTracksToday: [...state.currentUser.playedTracksToday, trackId]
     };
-    setState(prev => ({
-      ...prev,
-      currentUser: updatedUser,
-      users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u)
-    }));
+    setState(prev => ({ ...prev, currentUser: updatedUser, users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u) }));
   };
 
-  const addTransaction = (txn: Transaction) => {
-    const newState: any = {
-      ...state,
-      transactions: [txn, ...state.transactions]
-    };
-
-    if (txn.type === 'WITHDRAWAL') {
-      const adminNotif: AdminNotification = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: 'Withdrawal Requested',
-        message: `User @${state.currentUser?.username} requested a payout of $${txn.amountUSD.toFixed(2)}.`,
-        timestamp: new Date().toISOString(),
-        read: false,
-        type: 'WITHDRAWAL_REQUEST'
-      };
-      newState.adminNotifications = [adminNotif, ...state.adminNotifications];
-    }
-
-    if (txn.type === 'ACTIVATION') {
-      const adminNotif: AdminNotification = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: 'Activation Requested',
-        message: `User @${state.currentUser?.username} paid for ${txn.planRequested} plan.`,
-        timestamp: new Date().toISOString(),
-        read: false,
-        type: 'ACTIVATION_REQUEST'
-      };
-      newState.adminNotifications = [adminNotif, ...state.adminNotifications];
-    }
-
-    setState(newState);
-  };
-
-  const updateSettings = (newSettings: AppSettings) => {
-    setState(prev => ({ ...prev, settings: newSettings }));
-  };
-
-  const updateTracks = (newTracks: MusicTrack[]) => {
-    setState(prev => ({ ...prev, tracks: newTracks }));
-  };
+  const addTransaction = (txn: Transaction) => setState(prev => ({ ...prev, transactions: [txn, ...prev.transactions] }));
+  const updateSettings = (newSettings: AppSettings) => setState(prev => ({ ...prev, settings: newSettings }));
+  const updateTracks = (newTracks: MusicTrack[]) => setState(prev => ({ ...prev, tracks: newTracks }));
 
   const ProtectedRoute = ({ children, adminOnly = false }: { children?: React.ReactNode, adminOnly?: boolean }) => {
     if (!state.currentUser) return <Navigate to="/" />;
@@ -277,7 +153,36 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col relative overflow-hidden">
+        {state.settings.videoBackgroundUrl && (
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-30 grayscale"
+          >
+            <source src={state.settings.videoBackgroundUrl} type="video/mp4" />
+          </video>
+        )}
+        <div className="fixed inset-0 bg-[#050505]/60 z-[-1]"></div>
+
+        {/* New Song Notification */}
+        {showNewTrackNotify && (
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] w-[90%] max-w-sm animate-in slide-in-from-top-4 duration-500">
+             <div className="bg-gradient-to-r from-red-600 to-red-900 p-4 rounded-2xl shadow-2xl border border-white/20 flex items-center gap-4">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-600 animate-bounce">
+                   <i className="fas fa-music"></i>
+                </div>
+                <div>
+                   <h4 className="text-white font-black text-xs uppercase italic tracking-tighter leading-none">New Asset Synced</h4>
+                   <p className="text-white/80 text-[10px] font-bold uppercase mt-1">Earn more royalties now!</p>
+                </div>
+                <button onClick={() => setShowNewTrackNotify(false)} className="ml-auto text-white/50 hover:text-white transition-all"><i className="fas fa-times"></i></button>
+             </div>
+          </div>
+        )}
+
         {state.currentUser && <Navbar user={state.currentUser} onLogout={logout} />}
         <main className="flex-grow">
           <Routes>
@@ -290,14 +195,11 @@ const App: React.FC = () => {
                   transactions={state.transactions} 
                   onClaimDaily={claimDailyReward}
                   onSendMessage={sendMessage}
-                  onClearNotifications={clearNotifications}
+                  onSendPublicMessage={sendPublicChatMessage}
+                  onClearNotifications={() => {}}
                   messages={state.messages}
+                  publicChat={state.publicChat || []}
                 />
-              </ProtectedRoute>
-            } />
-            <Route path="/activation" element={
-              <ProtectedRoute>
-                <Activation user={state.currentUser!} settings={state.settings} onTransaction={addTransaction} setState={setState} />
               </ProtectedRoute>
             } />
             <Route path="/listen" element={
@@ -307,23 +209,17 @@ const App: React.FC = () => {
             } />
             <Route path="/withdraw" element={
               <ProtectedRoute>
-                <Withdraw 
-                  user={state.currentUser!} 
-                  settings={state.settings} 
-                  onTransaction={addTransaction}
-                  setState={setState}
-                />
+                <Withdraw user={state.currentUser!} settings={state.settings} onTransaction={addTransaction} setState={setState} />
+              </ProtectedRoute>
+            } />
+            <Route path="/activation" element={
+              <ProtectedRoute>
+                <Activation user={state.currentUser!} settings={state.settings} onTransaction={addTransaction} setState={setState} />
               </ProtectedRoute>
             } />
             <Route path="/admin" element={
               <ProtectedRoute adminOnly>
-                <AdminPanel 
-                  state={state} 
-                  onUpdateSettings={updateSettings} 
-                  onUpdateTracks={updateTracks}
-                  setState={setState}
-                  onSendMessage={sendMessage}
-                />
+                <AdminPanel state={state} onUpdateSettings={updateSettings} onUpdateTracks={updateTracks} setState={setState} onSendMessage={sendMessage} />
               </ProtectedRoute>
             } />
           </Routes>
