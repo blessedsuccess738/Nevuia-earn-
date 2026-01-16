@@ -14,36 +14,38 @@ import { stateStore } from './store';
 import { ADMIN_EMAIL } from './constants';
 
 const FallingBackground: React.FC = () => {
-  const [logos, setLogos] = useState<{ id: number; left: string; delay: string; duration: string; size: string }[]>([]);
+  const [elements, setElements] = useState<{ id: number; left: string; delay: string; duration: string; size: string; icon: string }[]>([]);
 
   useEffect(() => {
-    const newLogos = Array.from({ length: 15 }).map((_, i) => ({
+    const icons = ['fa-music', 'fa-headphones', 'fa-play', 'fa-bolt', 'fa-coins'];
+    const newElements = Array.from({ length: 18 }).map((_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 10}s`,
-      duration: `${15 + Math.random() * 20}s`,
-      size: `${1 + Math.random() * 2}rem`
+      delay: `${Math.random() * 20}s`,
+      duration: `${12 + Math.random() * 18}s`,
+      size: `${0.7 + Math.random() * 1.2}rem`,
+      icon: icons[Math.floor(Math.random() * icons.length)]
     }));
-    setLogos(newLogos);
+    setElements(newElements);
   }, []);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
-      {logos.map((logo) => (
+      {elements.map((el) => (
         <div
-          key={logo.id}
+          key={el.id}
           className="falling-logo"
           style={{
-            left: logo.left,
-            animationDelay: logo.delay,
-            animationDuration: logo.duration,
-            fontSize: logo.size
+            left: el.left,
+            animationDelay: el.delay,
+            animationDuration: el.duration,
+            fontSize: el.size
           }}
         >
-          <i className="fas fa-music opacity-20"></i>
+          <i className={`fas ${el.icon} opacity-10`}></i>
         </div>
       ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80"></div>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"></div>
     </div>
   );
 };
@@ -55,9 +57,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     stateStore.save(state);
+    
+    // Check for new tracks to show pop notification (Admin adds song)
     if (state.tracks.length > trackCountRef.current) {
       setShowNewTrackNotify(true);
-      setTimeout(() => setShowNewTrackNotify(false), 5000);
+      setTimeout(() => setShowNewTrackNotify(false), 7000);
     }
     trackCountRef.current = state.tracks.length;
   }, [state]);
@@ -145,20 +149,6 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, publicChat: [...(prev.publicChat || []), msg].slice(-50) }));
   };
 
-  const claimDailyReward = useCallback(() => {
-    if (!state.currentUser) return;
-    const today = new Date().toDateString();
-    if (state.currentUser.lastDailyRewardClaimed === today) return;
-    const reward = state.settings.dailyRewardUSD;
-    const updatedUser = { ...state.currentUser, balanceUSD: state.currentUser.balanceUSD + reward, lastDailyRewardClaimed: today };
-    setState(prev => ({
-      ...prev,
-      currentUser: updatedUser,
-      users: prev.users.map(u => u.id === updatedUser.id ? updatedUser : u),
-      transactions: [{ id: Math.random().toString(36).substr(2, 9), userId: state.currentUser!.id, amountUSD: reward, type: 'DAILY_REWARD', status: TransactionStatus.APPROVED, timestamp: new Date().toISOString() }, ...prev.transactions]
-    }));
-  }, [state.currentUser, state.settings.dailyRewardUSD]);
-
   const updateBalance = (amount: number, trackId: string) => {
     if (!state.currentUser) return;
     const updatedUser = {
@@ -184,26 +174,29 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-black text-white">
         <FallingBackground />
         
+        {/* GLOBAL NEW ASSET NOTIFICATION */}
         {showNewTrackNotify && (
-          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] w-[90%] max-w-sm animate-in slide-in-from-top-4 duration-500">
-             <div className="bg-gradient-to-r from-green-600 to-green-900 p-4 rounded-3xl shadow-2xl border border-white/20 flex items-center gap-4">
-                <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-green-600">
-                   <i className="fas fa-plus animate-bounce"></i>
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] w-[92%] max-w-sm pop-notification">
+             <div className="bg-gradient-to-r from-green-600 to-green-800 p-4 rounded-3xl shadow-2xl border border-white/20 flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-green-600 shadow-xl">
+                   <i className="fas fa-plus-circle text-2xl animate-pulse"></i>
                 </div>
                 <div>
-                   <h4 className="text-white font-black text-xs uppercase italic tracking-tighter leading-none">New Assets Available</h4>
-                   <p className="text-white/80 text-[10px] font-bold uppercase mt-1">Earning pools have been refreshed!</p>
+                   <h4 className="text-white font-black text-[11px] uppercase italic tracking-tighter leading-none">ASSET INJECTION</h4>
+                   <p className="text-white/80 text-[9px] font-bold uppercase mt-1">Admin has added new high-yield pools!</p>
                 </div>
-                <button onClick={() => setShowNewTrackNotify(false)} className="ml-auto text-white/50 hover:text-white transition-all"><i className="fas fa-times"></i></button>
+                <button onClick={() => setShowNewTrackNotify(false)} className="ml-auto text-white/30"><i className="fas fa-times"></i></button>
              </div>
           </div>
         )}
 
         {state.currentUser && <Navbar user={state.currentUser} onLogout={logout} />}
-        <main className="flex-grow flex flex-col page-enter">
+        
+        {/* CONTAINER FOR NORMAL ANDROID SIZE */}
+        <main className="flex-grow flex flex-col max-w-md mx-auto w-full relative">
           <Routes>
             <Route path="/" element={<Welcome onLogin={login} onRegister={register} />} />
             <Route path="/dashboard" element={
@@ -212,7 +205,7 @@ const App: React.FC = () => {
                   user={state.currentUser!} 
                   settings={state.settings} 
                   transactions={state.transactions} 
-                  onClaimDaily={claimDailyReward}
+                  onClaimDaily={() => {}}
                   onSendMessage={sendMessage}
                   onSendPublicMessage={sendPublicChatMessage}
                   onClearNotifications={() => {}}
@@ -223,7 +216,7 @@ const App: React.FC = () => {
             } />
             <Route path="/settings" element={
               <ProtectedRoute>
-                <Settings user={state.currentUser!} />
+                <Settings user={state.currentUser!} onLogout={logout} />
               </ProtectedRoute>
             } />
             <Route path="/listen" element={

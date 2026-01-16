@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User } from '../types';
-import { ADMIN_EMAIL, SPOTIFY_PNG } from '../constants';
+import { ADMIN_EMAIL } from '../constants';
 
 interface NavbarProps {
   user: User;
@@ -14,13 +14,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
 
   return (
     <nav className="glass-card sticky top-0 z-[70] px-4 py-4 flex items-center justify-between border-b border-white/10 shadow-2xl max-w-md mx-auto w-full">
-      <Link to="/dashboard" className="flex items-center gap-3 group">
-        <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/20 group-active:scale-90 transition-all">
-          <img src={SPOTIFY_PNG} className="w-6 h-6 object-contain" alt="Logo" />
+      <Link to="/dashboard" className="flex items-center gap-3 group active:scale-95 transition-all">
+        <div className="w-10 h-10 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/20">
+          <i className="fas fa-headphones text-black text-xl"></i>
         </div>
         <div className="flex flex-col">
-           <span className="font-black text-base tracking-tighter neon-glow leading-none">BEATBUCKS</span>
-           <span className="text-[7px] font-black text-green-500 uppercase tracking-[0.2em]">Earner OS</span>
+           <span className="font-black text-lg tracking-tighter neon-glow leading-none uppercase italic">BEATBUCKS</span>
+           <span className="text-[7px] font-black text-green-500 uppercase tracking-[0.2em]">Android OS v3</span>
         </div>
       </Link>
       
@@ -28,10 +28,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         {user.email === ADMIN_EMAIL && (
           <Link 
             to="/admin" 
-            className={`px-3 py-2 rounded-lg border font-black text-[8px] uppercase tracking-widest transition-all ${
+            className={`px-3 py-2 rounded-xl border font-black text-[8px] uppercase tracking-widest transition-all ${
               location.pathname === '/admin'
-                ? 'bg-green-500 text-black border-green-500'
-                : 'border-green-500/50 text-green-500 hover:bg-green-500/10'
+                ? 'bg-white text-black border-white'
+                : 'border-white/20 text-white hover:bg-white/10'
             }`}
           >
             ADMIN
@@ -40,8 +40,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
 
         <button 
           onClick={onLogout}
-          className="w-9 h-9 bg-white/5 hover:bg-red-500/10 rounded-xl flex items-center justify-center transition-all text-gray-500 hover:text-red-500 border border-white/5"
-          title="Exit Session"
+          className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center transition-all text-gray-500 hover:text-red-500 border border-white/5 active:scale-90"
         >
           <i className="fas fa-power-off text-xs"></i>
         </button>
