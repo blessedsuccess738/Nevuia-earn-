@@ -13,6 +13,41 @@ import { User, AppSettings, Transaction, AccountStatus, PlanTier, MusicTrack, Tr
 import { stateStore } from './store';
 import { ADMIN_EMAIL } from './constants';
 
+const FallingBackground: React.FC = () => {
+  const [logos, setLogos] = useState<{ id: number; left: string; delay: string; duration: string; size: string }[]>([]);
+
+  useEffect(() => {
+    const newLogos = Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 10}s`,
+      duration: `${15 + Math.random() * 20}s`,
+      size: `${1 + Math.random() * 2}rem`
+    }));
+    setLogos(newLogos);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
+      {logos.map((logo) => (
+        <div
+          key={logo.id}
+          className="falling-logo"
+          style={{
+            left: logo.left,
+            animationDelay: logo.delay,
+            animationDuration: logo.duration,
+            fontSize: logo.size
+          }}
+        >
+          <i className="fas fa-music opacity-20"></i>
+        </div>
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80"></div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [state, setState] = useState(stateStore.get());
   const [showNewTrackNotify, setShowNewTrackNotify] = useState(false);
@@ -20,8 +55,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     stateStore.save(state);
-    
-    // Check for new tracks to show notification
     if (state.tracks.length > trackCountRef.current) {
       setShowNewTrackNotify(true);
       setTimeout(() => setShowNewTrackNotify(false), 5000);
@@ -87,7 +120,6 @@ const App: React.FC = () => {
   const sendMessage = (text: string, isAdmin: boolean = false, targetUserId?: string) => {
     const userId = isAdmin ? (targetUserId || '') : (state.currentUser?.id || '');
     if (!userId) return;
-
     const msg: Message = {
       id: Math.random().toString(36).substr(2, 9),
       userId,
@@ -97,12 +129,11 @@ const App: React.FC = () => {
       read: false,
       isAdmin
     };
-
     setState(prev => ({ ...prev, messages: [...prev.messages, msg] }));
   };
 
   const sendPublicChatMessage = (text: string) => {
-    if (!state.currentUser) return;
+    if (!state.currentUser || state.currentUser.plan !== PlanTier.PREMIUM) return;
     const msg: PublicChatMessage = {
       id: Math.random().toString(36).substr(2, 9),
       userId: state.currentUser.id,
@@ -118,7 +149,6 @@ const App: React.FC = () => {
     if (!state.currentUser) return;
     const today = new Date().toDateString();
     if (state.currentUser.lastDailyRewardClaimed === today) return;
-
     const reward = state.settings.dailyRewardUSD;
     const updatedUser = { ...state.currentUser, balanceUSD: state.currentUser.balanceUSD + reward, lastDailyRewardClaimed: today };
     setState(prev => ({
@@ -154,29 +184,18 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#050505]">
-        {state.settings.videoBackgroundUrl && (
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-            className="fixed inset-0 w-full h-full object-cover z-[-1] opacity-20 grayscale"
-          >
-            <source src={state.settings.videoBackgroundUrl} type="video/mp4" />
-          </video>
-        )}
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
+        <FallingBackground />
         
-        {/* New Song Notification */}
         {showNewTrackNotify && (
           <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] w-[90%] max-w-sm animate-in slide-in-from-top-4 duration-500">
-             <div className="bg-gradient-to-r from-green-600 to-green-900 p-4 rounded-2xl shadow-2xl border border-white/20 flex items-center gap-4">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-green-600 animate-bounce">
-                   <i className="fas fa-music"></i>
+             <div className="bg-gradient-to-r from-green-600 to-green-900 p-4 rounded-3xl shadow-2xl border border-white/20 flex items-center gap-4">
+                <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-green-600">
+                   <i className="fas fa-plus animate-bounce"></i>
                 </div>
                 <div>
-                   <h4 className="text-white font-black text-xs uppercase italic tracking-tighter leading-none">New Asset Synced</h4>
-                   <p className="text-white/80 text-[10px] font-bold uppercase mt-1">Earn more royalties now!</p>
+                   <h4 className="text-white font-black text-xs uppercase italic tracking-tighter leading-none">New Assets Available</h4>
+                   <p className="text-white/80 text-[10px] font-bold uppercase mt-1">Earning pools have been refreshed!</p>
                 </div>
                 <button onClick={() => setShowNewTrackNotify(false)} className="ml-auto text-white/50 hover:text-white transition-all"><i className="fas fa-times"></i></button>
              </div>
@@ -184,7 +203,7 @@ const App: React.FC = () => {
         )}
 
         {state.currentUser && <Navbar user={state.currentUser} onLogout={logout} />}
-        <main className="flex-grow flex flex-col">
+        <main className="flex-grow flex flex-col page-enter">
           <Routes>
             <Route path="/" element={<Welcome onLogin={login} onRegister={register} />} />
             <Route path="/dashboard" element={

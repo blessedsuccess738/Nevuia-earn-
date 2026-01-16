@@ -3,8 +3,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeatBucks | Professional Audio Monetization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BeatBucks | Android Earner OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,51 +14,65 @@
     <style>
         * {
             -webkit-tap-highlight-color: transparent;
-            scrollbar-width: thin;
-            scrollbar-color: #22c55e #050505;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            user-select: none;
+        }
+        *::-webkit-scrollbar {
+            display: none;
         }
         
         body {
-            background-color: #050505;
+            background-color: #000000;
             color: #ffffff;
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
             margin: 0;
+            width: 100vw;
+            height: 100vh;
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .neon-glow {
-            text-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
         }
 
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
 
-        .bubble-icon {
-            position: absolute;
-            z-index: 1;
-            filter: blur(1px);
-            animation: float 10s ease-in-out infinite;
+        .falling-logo {
+            position: fixed;
+            top: -50px;
+            z-index: -1;
+            animation: fall linear infinite;
+            color: #22c55e;
             pointer-events: none;
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
+        .android-touch {
+            transition: transform 0.1s ease-out, background-color 0.2s;
         }
-        ::-webkit-scrollbar-track {
-            background: #050505;
+        .android-touch:active {
+            transform: scale(0.96);
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #22c55e;
-            border-radius: 10px;
+
+        .page-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 <script type="importmap">
